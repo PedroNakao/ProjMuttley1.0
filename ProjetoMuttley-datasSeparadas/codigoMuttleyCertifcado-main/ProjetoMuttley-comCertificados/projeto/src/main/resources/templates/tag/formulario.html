@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Tags</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --border: #e0e0e0;
+            --border-light: #eeeeee;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --text-placeholder: #aaaaaa;
+            --accent: #3a3a3a;
+            --accent-hover: #111;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166534;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --error-text: #991b1b;
+            --radius-sm: 7px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .container { max-width: 740px; margin: 0 auto; }
+
+        /* HEADER */
+        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+
+        .header-icon {
+            width: 46px; height: 46px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .header p  { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+
+        /* ALERTS */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.2rem;
+            font-size: 0.875rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
+        .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error-text); }
+
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-title    { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+        .card-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+
+        .field-label {
+            font-size: 0.82rem; font-weight: 500; color: #444;
+            margin-bottom: 0.4rem; display: block;
+        }
+
+        /* FORM */
+        .form-row { display: flex; gap: 0.6rem; }
+
+        .input {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.9rem;
+            color: var(--text);
+            font-family: inherit; font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .input:focus { border-color: #888; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+        .input::placeholder { color: var(--text-placeholder); }
+
+        .btn {
+            padding: 0.65rem 1.2rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .btn-danger {
+            background: var(--error-bg); color: var(--error-text);
+            border: 1px solid var(--error-border);
+            padding: 0.35rem 0.7rem; font-size: 0.78rem; border-radius: 6px;
+        }
+
+        .btn-danger:hover { background: #fee2e2; }
+
+        .btn-save {
+            background: var(--success-bg); color: var(--success-text);
+            border: 1px solid var(--success-border);
+            padding: 0.35rem 0.7rem; font-size: 0.78rem; border-radius: 6px;
+        }
+
+        .btn-save:hover { background: #dcfce7; }
+
+        /* SEARCH */
+        .search-wrapper { position: relative; margin-bottom: 1rem; }
+
+        .search-icon {
+            position: absolute; left: 0.75rem; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-placeholder); font-size: 0.9rem; pointer-events: none;
+        }
+
+        .search-input { width: 100%; padding-left: 2.2rem; background: #f9f9f9; border-color: var(--border-light); }
+
+        /* COUNT */
+        .count-text { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1rem; }
+
+        /* TAG CHIPS */
+        .tags-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 48px; }
+
+        .tag-chip {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.82rem; font-weight: 500;
+            border: 1px solid var(--border);
+            transition: opacity 0.15s;
+        }
+
+        .tag-chip:nth-child(7n+1) { background: #f5f5f5; border-color: #ddd; color: #444; }
+        .tag-chip:nth-child(7n+2) { background: #f0f7ff; border-color: #c8dff7; color: #1e4070; }
+        .tag-chip:nth-child(7n+3) { background: #f5f0ff; border-color: #d4c8f5; color: #4a2080; }
+        .tag-chip:nth-child(7n+4) { background: #f0fff5; border-color: #b8e8c8; color: #1a6040; }
+        .tag-chip:nth-child(7n+5) { background: #fff8f0; border-color: #e8d0b8; color: #704020; }
+        .tag-chip:nth-child(7n+6) { background: #f0f8ff; border-color: #b8d8f0; color: #1a4060; }
+        .tag-chip:nth-child(7n+7) { background: #fafaf0; border-color: #dcdcb0; color: #505020; }
+
+        .tag-chip .remove-btn {
+            background: none; border: none; cursor: pointer;
+            color: inherit; opacity: 0.45; font-size: 1rem; line-height: 1;
+            padding: 0; transition: opacity 0.15s;
+            display: flex; align-items: center;
+        }
+
+        .tag-chip .remove-btn:hover { opacity: 1; }
+
+        .empty-state { color: var(--text-placeholder); font-size: 0.85rem; padding: 1rem 0; }
+
+        /* TABLE */
+        .table-wrapper { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+
+        thead th {
+            font-size: 0.72rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted);
+            padding: 0.6rem 0.75rem; text-align: left;
+            border-bottom: 1px solid var(--border-light);
+            background: #fafafa;
+        }
+
+        thead th:first-child { border-radius: 8px 0 0 0; }
+        thead th:last-child  { border-radius: 0 8px 0 0; }
+
+        tbody tr { border-bottom: 1px solid var(--border-light); transition: background 0.1s; }
+        tbody tr:hover { background: #fafafa; }
+        tbody td { padding: 0.65rem 0.75rem; color: #444; vertical-align: middle; }
+
+        .id-cell { color: var(--text-placeholder); font-size: 0.8rem; width: 48px; }
+
+        .edit-form { display: flex; gap: 0.4rem; align-items: center; }
+
+        .input-sm { padding: 0.35rem 0.6rem; font-size: 0.82rem; border-radius: 6px; flex: 1; }
+
+        .actions-cell { display: flex; gap: 0.4rem; align-items: center; width: 100px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-icon">🏷️</div>
+        <div>
+            <h1>Gerenciar Tags</h1>
+            <p>Gerencie as tags de competências dos eventos</p>
+        </div>
+    </div>
+    <div><a th:href="@{/admin/dashboard}" class="btn btn-outline">Voltar</a></div>
+
+    <!-- ALERTAS THYMELEAF -->
+    <div class="alert alert-success" th:if="${sucesso}">
+        <span>✓</span> <span th:text="${sucesso}"></span>
+    </div>
+    <div class="alert alert-error" th:if="${erro}">
+        <span>✕</span> <span th:text="${erro}"></span>
+    </div>
+
+    <!-- CARD: Nova Tag -->
+    <div class="card">
+        <div class="card-title">Nova Tag</div>
+        <div class="card-subtitle">Digite o nome da competência ou área de conhecimento</div>
+
+        <form th:action="@{/tag/salvar}" method="post">
+            <label class="field-label">Nome da Tag</label>
+            <div class="form-row">
+                <input class="input" type="text" name="nome"
+                       placeholder="Ex: Soft Skills, Redes, IA..." required autocomplete="off" />
+                <button class="btn btn-primary" type="submit">+ Adicionar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- CARD: Chips de Tags Cadastradas -->
+    <div class="card">
+        <div class="card-title">Tags Cadastradas</div>
+        <div class="count-text" th:text="${#lists.size(tag)} + ' tag(s) no total'">0 tag(s) no total</div>
+
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input class="input search-input" type="text" id="searchInput"
+                   placeholder="Buscar tag..." oninput="filtrarTags(this.value)" autocomplete="off" />
+        </div>
+
+        <div class="tags-grid" id="tagsGrid">
+            <span class="empty-state" th:if="${#lists.isEmpty(tag)}">
+                Nenhuma tag cadastrada ainda.
+            </span>
+
+            <span class="tag-chip" th:each="t : ${tag}" th:attr="data-nome=${t.nome}">
+                <span th:text="${t.nome}">Tag</span>
+                <form th:action="@{/tag/excluir/{id}(id=${t.id})}" method="post" style="display:inline; margin:0;">
+                    <button type="submit" class="remove-btn" title="Remover">×</button>
+                </form>
+            </span>
+        </div>
+    </div>
+
+    <!-- CARD: Tabela com edição -->
+    <div class="card">
+        <div class="card-title">Todas as Tags</div>
+        <div class="card-subtitle">Visualize e edite as tags cadastradas</div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(tag)}">
+                        <td colspan="3" style="text-align:center; color:#aaa; padding:2rem;">
+                            Nenhuma tag encontrada.
+                        </td>
+                    </tr>
+                    <tr th:each="t : ${tag}">
+                        <td class="id-cell" th:text="${t.id}">1</td>
+                        <td>
+                            <form class="edit-form"
+                                  th:action="@{/tag/editar/{id}(id=${t.id})}"
+                                  method="post">
+                                <input class="input input-sm" type="text" name="nome"
+                                       th:value="${t.nome}" required />
+                                <button class="btn btn-save" type="submit">Salvar</button>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="actions-cell">
+                                <form th:action="@{/tag/excluir/{id}(id=${t.id})}" method="post">
+                                    <button class="btn btn-danger" type="submit">🗑 Excluir</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function filtrarTags(termo) {
+        const chips = document.querySelectorAll('#tagsGrid .tag-chip');
+        chips.forEach(chip => {
+            const nome = chip.getAttribute('data-nome').toLowerCase();
+            chip.style.display = nome.includes(termo.toLowerCase()) ? 'inline-flex' : 'none';
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Eventos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange:       #F97316;
+            --orange-light: #FFF7ED;
+            --orange-dark:  #EA580C;
+            --bg:           #F8FAFC;
+            --surface:      #FFFFFF;
+            --border:       #E2E8F0;
+            --text:         #0F172A;
+            --text-2:       #475569;
+            --text-3:       #94A3B8;
+            --green:        #22C55E;
+            --green-light:  #F0FDF4;
+            --green-border: #BBF7D0;
+            --green-text:   #166534;
+            --blue:         #3B82F6;
+            --blue-light:   #EFF6FF;
+            --purple:       #8B5CF6;
+            --purple-light: #F5F3FF;
+            --pink:         #EC4899;
+            --pink-light:   #FDF2F8;
+            --amber:        #F59E0B;
+            --amber-light:  #FFFBEB;
+            --radius:       16px;
+            --radius-sm:    10px;
+            --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+            --shadow-hover: 0 4px 12px rgba(0,0,0,.10), 0 12px 32px rgba(0,0,0,.06);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ────────────────────────────────── */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            padding: 1.5rem 1.25rem 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--orange);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .logo-text { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .logo-sub  { font-size: 0.7rem; color: var(--text-3); font-weight: 500; }
+
+        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
+
+        .nav-section-label {
+            font-size: 0.65rem; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 0.5rem 0.6rem 0.25rem;
+        }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem; font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+            cursor: pointer;
+        }
+        .nav-item:hover { background: var(--bg); color: var(--text); }
+        .nav-item.active { background: var(--orange-light); color: var(--orange-dark); font-weight: 600; }
+        .nav-item.active .nav-icon { color: var(--orange); }
+        .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+        /* ── MAIN ───────────────────────────────────── */
+        .main { margin-left: 240px; min-height: 100vh; }
+
+        /* ── TOPBAR ─────────────────────────────────── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(248,250,252,.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.875rem 2rem;
+            display: flex; align-items: center; gap: 1rem;
+        }
+
+        .search-wrap {
+            flex: 1; max-width: 480px;
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .search-wrap:focus-within {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(249,115,22,.12);
+        }
+        .search-icon { color: var(--text-3); font-size: 0.9rem; }
+        .search-input {
+            flex: 1; border: none; outline: none;
+            font-family: inherit; font-size: 0.875rem; color: var(--text);
+            background: transparent;
+        }
+        .search-input::placeholder { color: var(--text-3); }
+
+        .filter-pills { display: flex; gap: 0.4rem; margin-left: auto; }
+        .pill {
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem; font-weight: 600;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-2);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .pill:hover { border-color: var(--orange); color: var(--orange); }
+        .pill.active { background: var(--text); border-color: var(--text); color: white; }
+
+        /* ── CONTENT ────────────────────────────────── */
+        .content { padding: 2rem; }
+
+        .page-header { margin-bottom: 1.75rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-title  { font-size: 1.5rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .page-sub    { font-size: 0.85rem; color: var(--text-3); margin-top: 0.2rem; font-weight: 500; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: var(--orange);
+            color: white;
+            border: none; border-radius: var(--radius-sm);
+            padding: 0.65rem 1.25rem;
+            font-family: inherit; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; text-decoration: none;
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(249,115,22,.35);
+        }
+        .btn-primary:hover  { background: var(--orange-dark); box-shadow: 0 4px 16px rgba(249,115,22,.4); }
+        .btn-primary:active { transform: scale(0.97); }
+
+        /* ── STATS ROW ──────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .stat-label { font-size: 0.75rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--text); letter-spacing: -0.04em; }
+        .stat-sub   { font-size: 0.78rem; color: var(--text-3); font-weight: 500; }
+
+        /* ── EVENTO GRID ─────────────────────────────── */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .event-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s, transform 0.2s;
+            display: flex; flex-direction: column;
+        }
+        .event-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+        .event-card-top {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .date-block {
+            width: 52px; min-width: 52px;
+            background: var(--orange-light);
+            border: 1.5px solid #FDBA74;
+            border-radius: 12px;
+            text-align: center;
+            padding: 0.4rem 0.2rem;
+        }
+        .date-day { font-size: 1.5rem; font-weight: 800; color: var(--orange-dark); line-height: 1; }
+        .date-mon { font-size: 0.65rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.06em; }
+
+        .event-info { flex: 1; min-width: 0; }
+        .event-badge {
+            display: inline-flex; align-items: center;
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .badge-workshop { background: #EDE9FE; color: #7C3AED; }
+        .badge-palestra { background: #DBEAFE; color: #1D4ED8; }
+        .badge-aula     { background: #D1FAE5; color: #065F46; }
+        .badge-forum    { background: #FEF3C7; color: #92400E; }
+        .badge-maratona { background: #FCE7F3; color: #9D174D; }
+        .badge-meetup   { background: #E0F2FE; color: #0369A1; }
+        .badge-outro    { background: #F1F5F9; color: #475569; }
+
+        .event-title {
+            font-size: 0.95rem; font-weight: 700; color: var(--text);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .event-card-body { padding: 0.9rem 1.25rem; flex: 1; }
+
+        .event-meta { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.9rem; }
+        .meta-row {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.8rem; color: var(--text-2);
+        }
+        .meta-icon { font-size: 0.85rem; width: 16px; text-align: center; }
+
+        .tags-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .tag-chip {
+            padding: 0.2rem 0.55rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.72rem; font-weight: 600; color: var(--text-2);
+        }
+
+        .event-card-footer { padding: 0.9rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
+
+        .btn-action {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+            padding: 0.55rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.78rem; font-weight: 700;
+            cursor: pointer; text-decoration: none;
+            border: none; font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-inscricao {
+            background: var(--orange);
+            color: white;
+            box-shadow: 0 2px 6px rgba(249,115,22,.3);
+        }
+        .btn-inscricao:hover { background: var(--orange-dark); }
+
+        .btn-qr {
+            background: var(--bg);
+            color: var(--text-2);
+            border: 1.5px solid var(--border);
+        }
+        .btn-qr:hover { background: var(--text); color: white; border-color: var(--text); }
+
+        .inscrito-badge {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.55rem; border-radius: 8px;
+            border: 1.5px solid var(--green-border);
+            background: var(--green-light);
+            color: var(--green-text);
+            font-size: 0.8rem; font-weight: 700;
+        }
+
+        /* ── PARTICIPANTES CONTAGEM ─────────────────── */
+        .participants-bar {
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .bar-track {
+            flex: 1; height: 4px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .bar-fill { height: 100%; background: var(--orange); border-radius: 99px; transition: width 0.6s ease; }
+        .bar-label { font-size: 0.72rem; font-weight: 700; color: var(--text-3); white-space: nowrap; }
+
+        /* ── EMPTY STATE ─────────────────────────────── */
+        .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
+        .empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.5rem; }
+        .empty-sub   { font-size: 0.85rem; color: var(--text-3); }
+
+        /* ── LOADING ─────────────────────────────────── */
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* ── MODAL QR ────────────────────────────────── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.5);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 380px; width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2);
+            text-align: center;
+            animation: modalIn .2s ease;
+        }
+        @keyframes modalIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+        .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.3rem; }
+        .modal-sub   { font-size: 0.82rem; color: var(--text-3); margin-bottom: 1.25rem; }
+        .qr-container { margin: 0 auto 1.25rem; display: flex; justify-content: center; }
+        .qr-url {
+            background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-2);
+            word-break: break-all; margin-bottom: 1rem; text-align: left;
+        }
+        .modal-actions { display: flex; gap: 0.5rem; }
+        .btn-modal-close {
+            flex:1; padding: 0.65rem; border-radius: 8px;
+            background: var(--bg); border: 1px solid var(--border);
+            font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-modal-open {
+            flex:1; padding: 0.65rem; border-radius: 8px;
+            background: var(--orange); color: white; border: none;
+            font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            text-decoration: none; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-modal-open:hover { background: var(--orange-dark); }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .content { padding: 1rem; }
+            .stats-row { grid-template-columns: repeat(2,1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🏷</div>
+        <div>
+            <div class="logo-text">TAG System</div>
+            <div class="logo-sub">Painel Administrativo</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item active" th:href="@{/admin/dashboard}">
+            <span class="nav-icon">📅</span> Eventos
+        </a>
+        <a class="nav-item" th:href="@{/eventos/cadastrar}">
+            <span class="nav-icon">➕</span> Novo Evento
+        </a>
+
+        <div class="nav-section-label" style="margin-top:.75rem;">Gestão</div>
+        <a class="nav-item" th:href="@{/tag}">
+            <span class="nav-icon">🏅</span> Gerenciar Tags
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
+
+    <div class="topbar">
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" id="searchInput"
+                   placeholder="Buscar por nome ou tag..." oninput="filtrar()" />
+        </div>
+        <div class="filter-pills" id="filterPills">
+            <button class="pill active" onclick="setFiltro('todos', this)">Todos</button>
+            <button class="pill" onclick="setFiltro('WORKSHOP', this)">Workshop</button>
+            <button class="pill" onclick="setFiltro('PALESTRA', this)">Palestra</button>
+            <button class="pill" onclick="setFiltro('AULA_ABERTA', this)">Aula Aberta</button>
+
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Eventos</div>
+                <div class="page-sub" id="eventCount">Carregando eventos...</div>
+            </div>
+        </div>
+
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+                <div class="stat-label">Total de Eventos</div>
+                <div class="stat-value" id="statTotal">—</div>
+                <div class="stat-sub">cadastrados no sistema</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Ativos</div>
+                <div class="stat-value" id="statAtivos">—</div>
+                <div class="stat-sub">eventos ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Participantes</div>
+                <div class="stat-value" id="statPart">—</div>
+                <div class="stat-sub">inscrições totais</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Próximo Evento</div>
+                <div class="stat-value" id="statProx" style="font-size:1rem;padding-top:4px;">—</div>
+                <div class="stat-sub">em breve</div>
+            </div>
+        </div>
+
+        <div class="events-grid" id="eventsGrid">
+            <div class="event-card" style="padding:2rem;text-align:center;grid-column:1/-1;">
+                <div style="font-size:2rem;margin-bottom:.5rem;">⏳</div>
+                <div style="color:var(--text-3);font-size:.875rem;">Carregando eventos...</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="modal-overlay" id="modalQr">
+    <div class="modal">
+        <div class="modal-title">QR Code do Evento</div>
+        <div class="modal-sub" id="qrEventoNome">—</div>
+        <div class="qr-container" id="qrCanvas"></div>
+        <div class="qr-url" id="qrUrl">—</div>
+        <div class="modal-actions">
+            <button class="btn-modal-close" onclick="fecharModal()">Fechar</button>
+            <a class="btn-modal-open" id="qrLink" href="#" target="_blank">Abrir formulário →</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+    const BADGE_CLASS = {
+        WORKSHOP:'badge-workshop', PALESTRA:'badge-palestra',
+        AULA_ABERTA:'badge-aula', FORUM:'badge-forum',
+        MARATONA_PROGRAMACAO:'badge-maratona', MEETUP:'badge-meetup', OUTRO:'badge-outro'
+    };
+    const BADGE_LABEL = {
+        WORKSHOP:'Workshop', PALESTRA:'Palestra', AULA_ABERTA:'Aula Aberta',
+        FORUM:'Fórum', MARATONA_PROGRAMACAO:'Maratona', MEETUP:'Meetup',
+        PORTAS_ABERTAS:'Portas Abertas', OUTRO:'Outro'
+    };
+
+    let todosEventos = [];
+    let filtroAtivo = 'todos';
+    let busca = '';
+
+    async function carregarEventos() {
+        try {
+            const r = await fetch('/api/admin/eventos');
+            const data = await r.json();
+            todosEventos = data.eventos || [];
+
+            // stats
+            document.getElementById('statTotal').textContent = todosEventos.length;
+            document.getElementById('statAtivos').textContent = todosEventos.filter(e => e.ativo).length;
+            document.getElementById('statPart').textContent = data.totalParticipantes || 0;
+
+            const futuros = todosEventos.filter(e => new Date(e.dataInicio) > new Date()).sort((a,b)=>new Date(a.dataInicio)-new Date(b.dataInicio));
+            document.getElementById('statProx').textContent = futuros.length
+                ? futuros[0].titulo.substring(0,22) + '…'
+                : 'Nenhum futuro';
+
+            renderizar();
+        } catch(e) {
+            document.getElementById('eventsGrid').innerHTML =
+                '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><div class="empty-title">Erro ao carregar</div><div class="empty-sub">Verifique se o servidor está rodando na porta 8083</div></div>';
+        }
+    }
+
+    function filtrar() {
+        busca = document.getElementById('searchInput').value.toLowerCase();
+        renderizar();
+    }
+
+    function setFiltro(tipo, el) {
+        filtroAtivo = tipo;
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        renderizar();
+    }
+
+    function renderizar() {
+        let lista = todosEventos;
+        if (filtroAtivo !== 'todos') lista = lista.filter(e => e.tipoEvento === filtroAtivo);
+        if (busca) lista = lista.filter(e =>
+            e.titulo.toLowerCase().includes(busca) ||
+            (e.tags || []).some(t => t.toLowerCase().includes(busca))
+        );
+
+        document.getElementById('eventCount').textContent =
+            lista.length + ' evento' + (lista.length !== 1 ? 's' : '') + ' encontrado' + (lista.length !== 1 ? 's' : '');
+
+        const grid = document.getElementById('eventsGrid');
+        if (!lista.length) {
+            grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Nenhum evento encontrado</div><div class="empty-sub">Tente outro filtro ou <a href="/eventos/cadastrar" style="color:var(--orange)">cadastre um novo evento</a></div></div>';
+            return;
+        }
+        grid.innerHTML = lista.map(e => renderCard(e)).join('');
+    }
+
+    function renderCard(e) {
+        const dt = new Date(e.dataInicio);
+        const dia = dt.getDate();
+        const mes = MESES[dt.getMonth()];
+        const hora = dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) + 'h';
+        const carga = e.cargaHorariaMinutos
+            ? (Math.floor(e.cargaHorariaMinutos/60) > 0 ? Math.floor(e.cargaHorariaMinutos/60)+'h ' : '') + (e.cargaHorariaMinutos%60 > 0 ? e.cargaHorariaMinutos%60+'min' : '')
+            : '—';
+        const badgeCls = BADGE_CLASS[e.tipoEvento] || 'badge-outro';
+        const badgeLbl = BADGE_LABEL[e.tipoEvento] || e.tipoEvento;
+        const tags = (e.tags || []).map(t => `<span class="tag-chip">${esc(t)}</span>`).join('');
+
+        const totalVagas = e.vagasMaximas || 0;
+        const inscritos = e.totalInscritos || 0;
+        const pct = totalVagas > 0 ? Math.min(100, Math.round(inscritos / totalVagas * 100)) : 0;
+        const barraHtml = totalVagas > 0
+            ? `<div class="participants-bar"><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-label">${inscritos}/${totalVagas}</span></div>`
+            : '';
+
+        const urlInscricao = '/participante/cadastrar?eventoId=' + e.id;
+        const urlQr = encodeURIComponent(location.origin + urlInscricao);
+
+        return `
+        <div class="event-card" data-tipo="${e.tipoEvento}" data-id="${e.id}">
+            <div class="event-card-top">
+                <div class="date-block">
+                    <div class="date-day">${dia}</div>
+                    <div class="date-mon">${mes}</div>
+                </div>
+                <div class="event-info">
+                    <span class="event-badge ${badgeCls}">${badgeLbl}</span>
+                    <div class="event-title" title="${esc(e.titulo)}">${esc(e.titulo)}</div>
+                </div>
+            </div>
+            <div class="event-card-body">
+                <div class="event-meta">
+                    <div class="meta-row"><span class="meta-icon">🕐</span>${hora} • ${carga} de carga horária</div>
+                    ${e.local ? `<div class="meta-row"><span class="meta-icon">📍</span>${esc(e.local)}</div>` : ''}
+                    <div class="meta-row"><span class="meta-icon">👥</span>${inscritos} participante${inscritos !== 1 ? 's' : ''}</div>
+                </div>
+                ${barraHtml}
+                ${tags ? `<div class="tags-row" style="margin-top:.75rem;">${tags}</div>` : ''}
+            </div>
+            <div class="event-card-footer">
+                <a class="btn-action btn-inscricao" href="${urlInscricao}">Inscrição →</a>
+                <button class="btn-action btn-qr" onclick="abrirQr(${e.id}, '${esc(e.titulo).replace(/'/g,"\\'")}')">🔳 QR Code</button>
+            </div>
+        </div>`;
+    }
+
+    function esc(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── QR CODE ──────────────────────────────────
+    let qrInstance = null;
+    function abrirQr(eventoId, titulo) {
+        const url = location.origin + '/participante/cadastrar?eventoId=' + eventoId;
+        document.getElementById('qrEventoNome').textContent = titulo;
+        document.getElementById('qrUrl').textContent = url;
+        document.getElementById('qrLink').href = url;
+
+        const canvas = document.getElementById('qrCanvas');
+        canvas.innerHTML = '';
+        qrInstance = new QRCode(canvas, {
+            text: url,
+            width: 200, height: 200,
+            colorDark: '#0F172A', colorLight: '#FFFFFF',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        document.getElementById('modalQr').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function fecharModal() {
+        document.getElementById('modalQr').classList.remove('open');
+        document.body.style.overflow = '';
+        document.getElementById('qrCanvas').innerHTML = '';
+    }
+    document.getElementById('modalQr').addEventListener('click', function(e) {
+        if (e.target === this) fecharModal();
+    });
+
+    carregarEventos();
+</script>
+</body>
+</html>

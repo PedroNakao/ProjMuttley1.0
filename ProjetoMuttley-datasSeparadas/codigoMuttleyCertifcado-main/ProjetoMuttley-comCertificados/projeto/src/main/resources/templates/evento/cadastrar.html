@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Evento</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --border: #e0e0e0;
+            --border-light: #eeeeee;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --text-placeholder: #aaaaaa;
+            --accent: #3a3a3a;
+            --accent-hover: #111;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166534;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --error-text: #991b1b;
+            --radius-sm: 7px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .container { max-width: 720px; margin: 0 auto; }
+
+        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+        .header-icon {
+            width: 46px; height: 46px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .header p  { color: var(--text-muted); font-size: 0.82rem; margin-top: 2px; }
+
+        .nav-links { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .nav-links a {
+            font-size: 0.82rem; color: var(--text-muted);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 1px;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.2rem;
+            font-size: 0.875rem;
+        }
+        .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
+        .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error-text); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .card-title    { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+        .card-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+
+        .field { margin-bottom: 1rem; }
+        .field-label {
+            font-size: 0.82rem; font-weight: 500; color: #444;
+            margin-bottom: 0.4rem; display: block;
+        }
+        .field-label .optional { font-weight: 400; color: var(--text-placeholder); margin-left: 0.3rem; }
+
+        .input, .select, .textarea {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.9rem;
+            color: var(--text);
+            font-family: inherit; font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input:focus, .select:focus, .textarea:focus {
+            border-color: #888;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+        }
+        .input::placeholder, .textarea::placeholder { color: var(--text-placeholder); }
+        .textarea { resize: vertical; min-height: 90px; }
+        .select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6b6b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.9rem center;
+            padding-right: 2.2rem;
+        }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+        .toggle-group { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .toggle-item { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+        .toggle-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+        .toggle-item span { font-size: 0.875rem; color: var(--text); }
+
+        .multiselect-box {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 0.4rem;
+        }
+        .multiselect-box label {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.1s;
+            user-select: none;
+        }
+        .multiselect-box label:hover { background: #f5f5f5; }
+        .multiselect-box input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; }
+        .multiselect-empty { font-size: 0.82rem; color: var(--text-placeholder); padding: 0.5rem; display: block; }
+
+        .btn {
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-outline {
+            background: transparent; color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: #f5f5f5; color: var(--text); }
+
+        .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; align-items: center; }
+
+        .hint { font-size: 0.78rem; color: var(--text-placeholder); margin-top: 0.3rem; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.45); z-index: 1000;
+            align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface); border-radius: 14px;
+            width: 100%; max-width: 540px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title { font-weight: 700; font-size: 1rem; }
+        .modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); font-size: 1.1rem;
+            padding: .2rem .4rem; border-radius: 4px;
+        }
+        .modal-close:hover { background: #f5f5f5; color: var(--text); }
+        .modal-body { padding: 1.25rem 1.5rem; max-height: 60vh; overflow-y: auto; }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex; gap: .75rem;
+        }
+        .modal-alert {
+            background: var(--error-bg); border: 1px solid var(--error-border);
+            color: var(--error-text); padding: .6rem .9rem;
+            border-radius: var(--radius-sm); font-size: .82rem;
+            margin-bottom: 1rem;
+        }
+        /* BOTÃO + NOVO */
+        .btn-novo {
+            font-size: .78rem; font-weight: 600; color: var(--accent);
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 6px; padding: .25rem .7rem;
+            cursor: pointer; transition: all .15s; white-space: nowrap;
+        }
+        .btn-novo:hover { background: #f5f5f5; border-color: #aaa; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-icon">📅</div>
+        <div>
+            <h1>Cadastrar Evento</h1>
+            <p>Preencha os dados para criar um novo evento no sistema</p>
+        </div>
+    </div>
+    <!-- FEEDBACK DO SERVIDOR -->
+    <div th:if="${mensagem}" class="alert"
+         th:classappend="${mensagem.startsWith('Erro') or mensagem.startsWith('erro') ? 'alert-error' : 'alert-success'}"
+         th:text="${mensagem}">
+    </div>
+
+    <form th:action="@{/eventos/cadastrar}" method="POST">
+
+        <!-- INFORMAÇÕES BÁSICAS -->
+        <div class="card">
+            <div class="card-title">Informações Básicas</div>
+            <div class="card-subtitle">Dados principais do evento</div>
+
+            <div class="field">
+                <label class="field-label" for="titulo">Título do Evento</label>
+                <input class="input" type="text" id="titulo" name="titulo"
+                       placeholder="Ex: Workshop de Spring Boot" maxlength="200" required />
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="descricao">
+                    Descrição <span class="optional">(opcional)</span>
+                </label>
+                <textarea class="textarea" id="descricao" name="descricao"
+                          placeholder="Descreva o evento, seus objetivos e público-alvo..." maxlength="1000"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="tipoEvento">Tipo do Evento</label>
+                    <select class="select" id="tipoEvento" name="tipoEvento" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="PALESTRA">Palestra</option>
+                        <option value="WORKSHOP">Workshop</option>
+                        <option value="AULA_ABERTA">Aula Aberta</option>
+                        <option value="FORUM">Fórum</option>
+                        <option value="MARATONA_PROGRAMACAO">Maratona de Programação</option>
+                        <option value="PORTAS_ABERTAS">Portas Abertas</option>
+                        <option value="MEETUP">Meetup</option>
+                        <option value="OUTRO">Outro</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="modalidade">Modalidade</label>
+                    <select class="select" id="modalidade" name="modalidade" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="PRESENCIAL">Presencial</option>
+                        <option value="REMOTO">Remoto</option>
+                        <option value="HIBRIDO">Híbrido</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA E LOCAL -->
+        <div class="card">
+            <div class="card-title">Data, Hora e Local</div>
+            <div class="card-subtitle">Quando e onde o evento acontece</div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="dataInicioData">Data de Início</label>
+                    <input class="input" type="date" id="dataInicioData" name="dataInicioData" required />
+                </div>
+                <div class="field">
+                    <label class="field-label" for="dataInicioHora">Hora de Início</label>
+                    <input class="input" type="time" id="dataInicioHora" name="dataInicioHora" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="dataFimData">Data de Fim</label>
+                    <input class="input" type="date" id="dataFimData" name="dataFimData" required />
+                </div>
+                <div class="field">
+                    <label class="field-label" for="dataFimHora">Hora de Fim</label>
+                    <input class="input" type="time" id="dataFimHora" name="dataFimHora" required />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="local">
+                    Local / Link <span class="optional">(opcional)</span>
+                </label>
+                <input class="input" type="text" id="local" name="local"
+                       placeholder="Ex: Auditório Bloco A  ou  https://meet.google.com/..." maxlength="300" />
+                <p class="hint">Para eventos remotos, informe o link da reunião.</p>
+            </div>
+        </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div class="card">
+            <div class="card-title">Configurações Adicionais</div>
+            <div class="card-subtitle">Vagas, pontuação e vínculo acadêmico</div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="vagasMaximas">Vagas Máximas</label>
+                    <input class="input" type="number" id="vagasMaximas" name="vagasMaximas"
+                           value="0" min="0" />
+                    <p class="hint">0 = ilimitado</p>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="pontosParticipacao">Pontos de Participação</label>
+                    <input class="input" type="number" id="pontosParticipacao" name="pontosParticipacao"
+                           value="1" min="0" required />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="semestreReferencia">
+                        Semestre <span class="optional">(opcional)</span>
+                    </label>
+                    <input class="input" type="text" id="semestreReferencia" name="semestreReferencia"
+                           placeholder="Ex: 2026.1" maxlength="10" />
+                </div>
+                <div class="field">
+                    <label class="field-label" for="disciplinaRelacionada">
+                        Disciplina <span class="optional">(opcional)</span>
+                    </label>
+                    <input class="input" type="text" id="disciplinaRelacionada" name="disciplinaRelacionada"
+                           placeholder="Ex: Engenharia de Software" maxlength="150" />
+                </div>
+            </div>
+
+            <div class="field" style="margin-top: 0.25rem;">
+                <div class="toggle-group">
+                    <label class="toggle-item">
+                        <input type="checkbox" name="eForum" value="true" />
+                        <span>Faz parte de um Fórum</span>
+                    </label>
+                    <label class="toggle-item">
+                        <input type="checkbox" name="concedeMedalhaEspecial" value="true" />
+                        <span>Concede Medalha Especial</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ASSOCIAÇÕES -->
+        <div class="card">
+            <div class="card-title">Tags, Palestrantes e Patrocinadores</div>
+            <div class="card-subtitle">Associações opcionais — ou cadastre novos diretamente aqui</div>
+
+            <div class="field">
+                <label class="field-label">Tags de Competência <span class="optional">(opcional)</span></label>
+                <div class="multiselect-box" id="tagsBox">
+                    <span class="multiselect-empty" id="tagsEmpty">Carregando tags...</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;">
+                    <label class="field-label" style="margin-bottom:0;">Palestrantes <span class="optional">(opcional)</span></label>
+                    <button type="button" class="btn-novo" onclick="abrirModal('modalPalestrante')">+ Novo palestrante</button>
+                </div>
+                <div class="multiselect-box" id="palestrantesBox">
+                    <span class="multiselect-empty" id="palestrantesEmpty">Carregando palestrantes...</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;">
+                    <label class="field-label" style="margin-bottom:0;">Patrocinadores <span class="optional">(opcional)</span></label>
+                    <button type="button" class="btn-novo" onclick="abrirModal('modalPatrocinador')">+ Novo patrocinador</button>
+                </div>
+                <div class="multiselect-box" id="patrocinadoresBox">
+                    <span class="multiselect-empty" id="patrocinadoresEmpty">Carregando patrocinadores...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Novo Palestrante -->
+        <div class="modal-overlay" id="modalPalestrante">
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title">Cadastrar Palestrante</span>
+                    <button type="button" class="modal-close" onclick="fecharModal('modalPalestrante')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalPalestranteErro" class="modal-alert" style="display:none;"></div>
+                    <div class="field">
+                        <label class="field-label">Nome <span style="color:red">*</span></label>
+                        <input class="input" type="text" id="pal_nome" placeholder="Nome completo" />
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label class="field-label">Título / Cargo <span class="optional">(opcional)</span></label>
+                            <input class="input" type="text" id="pal_titulo" placeholder="Ex: Professor, Engenheiro" />
+                        </div>
+                        <div class="field">
+                            <label class="field-label">E-mail <span class="optional">(opcional)</span></label>
+                            <input class="input" type="email" id="pal_email" placeholder="email@exemplo.com" />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Bio <span class="optional">(opcional)</span></label>
+                        <textarea class="textarea" id="pal_bio" placeholder="Breve descrição do palestrante..." style="min-height:70px;"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label class="field-label">LinkedIn <span class="optional">(opcional)</span></label>
+                            <input class="input" type="text" id="pal_linkedin" placeholder="linkedin.com/in/perfil" />
+                        </div>
+                        <div class="field">
+                            <label class="field-label">GitHub <span class="optional">(opcional)</span></label>
+                            <input class="input" type="text" id="pal_github" placeholder="github.com/usuario" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="salvarPalestrante()">Salvar palestrante</button>
+                    <button type="button" class="btn btn-outline" onclick="fecharModal('modalPalestrante')">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Novo Patrocinador -->
+        <div class="modal-overlay" id="modalPatrocinador">
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title">Cadastrar Patrocinador</span>
+                    <button type="button" class="modal-close" onclick="fecharModal('modalPatrocinador')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalPatrocinadorErro" class="modal-alert" style="display:none;"></div>
+                    <div class="field">
+                        <label class="field-label">Nome <span style="color:red">*</span></label>
+                        <input class="input" type="text" id="pat_nome" placeholder="Nome da empresa / patrocinador" />
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label class="field-label">Nível de Patrocínio <span class="optional">(opcional)</span></label>
+                            <select class="select" id="pat_nivel">
+                                <option value="">Selecione...</option>
+                                <option value="Ouro">Ouro</option>
+                                <option value="Prata">Prata</option>
+                                <option value="Bronze">Bronze</option>
+                                <option value="Apoio">Apoio</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">E-mail <span class="optional">(opcional)</span></label>
+                            <input class="input" type="email" id="pat_email" placeholder="contato@empresa.com" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label class="field-label">Site <span class="optional">(opcional)</span></label>
+                            <input class="input" type="text" id="pat_site" placeholder="https://empresa.com" />
+                        </div>
+                        <div class="field">
+                            <label class="field-label">URL do Logo <span class="optional">(opcional)</span></label>
+                            <input class="input" type="text" id="pat_logo" placeholder="https://..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="salvarPatrocinador()">Salvar patrocinador</button>
+                    <button type="button" class="btn btn-outline" onclick="fecharModal('modalPatrocinador')">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AÇÕES -->
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">✓ Cadastrar Evento</button>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // ── Modais ────────────────────────────────────────────────────────────────
+    function abrirModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    function fecharModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+    // Fecha modal ao clicar no overlay
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) fecharModal(overlay.id);
+        });
+    });
+
+    // ── Adiciona item ao multiselect dinamicamente ────────────────────────────
+    function adicionarAoMultiselect(boxId, emptyId, id, label, name) {
+        var box = document.getElementById(boxId);
+        var empty = document.getElementById(emptyId);
+        if (empty) { empty.remove(); }
+        var lbl = document.createElement('label');
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.name = name;
+        cb.value = id;
+        cb.checked = true; // já marca o recém-criado
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(' ' + label));
+        box.appendChild(lbl);
+    }
+
+    // ── Salvar palestrante inline ─────────────────────────────────────────────
+    async function salvarPalestrante() {
+        var nome = document.getElementById('pal_nome').value.trim();
+        var erroDiv = document.getElementById('modalPalestranteErro');
+        erroDiv.style.display = 'none';
+
+        if (!nome) {
+            erroDiv.textContent = 'Nome é obrigatório.';
+            erroDiv.style.display = 'block';
+            return;
+        }
+
+        var params = new URLSearchParams({
+            nome: nome,
+            titulo: document.getElementById('pal_titulo').value.trim(),
+            email: document.getElementById('pal_email').value.trim(),
+            bio: document.getElementById('pal_bio').value.trim(),
+            linkedinUrl: document.getElementById('pal_linkedin').value.trim(),
+            githubUrl: document.getElementById('pal_github').value.trim()
+        });
+
+        try {
+            var resp = await fetch('/api/palestrantes/criar', { method: 'POST', body: params });
+            var data = await resp.json();
+            if (!resp.ok || data.erro) {
+                erroDiv.textContent = data.erro || 'Erro ao salvar.';
+                erroDiv.style.display = 'block';
+                return;
+            }
+            var label = data.nome + (data.titulo ? ' · ' + data.titulo : '');
+            adicionarAoMultiselect('palestrantesBox', 'palestrantesEmpty', data.id, label, 'palestranteIds');
+            // Limpa campos
+            ['pal_nome','pal_titulo','pal_email','pal_bio','pal_linkedin','pal_github'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            fecharModal('modalPalestrante');
+        } catch (e) {
+            erroDiv.textContent = 'Erro de conexão: ' + e.message;
+            erroDiv.style.display = 'block';
+        }
+    }
+
+    // ── Salvar patrocinador inline ────────────────────────────────────────────
+    async function salvarPatrocinador() {
+        var nome = document.getElementById('pat_nome').value.trim();
+        var erroDiv = document.getElementById('modalPatrocinadorErro');
+        erroDiv.style.display = 'none';
+
+        if (!nome) {
+            erroDiv.textContent = 'Nome é obrigatório.';
+            erroDiv.style.display = 'block';
+            return;
+        }
+
+        var params = new URLSearchParams({
+            nome: nome,
+            nivelPatrocinio: document.getElementById('pat_nivel').value,
+            email: document.getElementById('pat_email').value.trim(),
+            site: document.getElementById('pat_site').value.trim(),
+            logoUrl: document.getElementById('pat_logo').value.trim()
+        });
+
+        try {
+            var resp = await fetch('/api/patrocinadores/criar', { method: 'POST', body: params });
+            var data = await resp.json();
+            if (!resp.ok || data.erro) {
+                erroDiv.textContent = data.erro || 'Erro ao salvar.';
+                erroDiv.style.display = 'block';
+                return;
+            }
+            var label = data.nome + (data.nivelPatrocinio ? ' [' + data.nivelPatrocinio + ']' : '');
+            adicionarAoMultiselect('patrocinadoresBox', 'patrocinadoresEmpty', data.id, label, 'patrocinadorIds');
+            ['pat_nome','pat_email','pat_site','pat_logo'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('pat_nivel').value = '';
+            fecharModal('modalPatrocinador');
+        } catch (e) {
+            erroDiv.textContent = 'Erro de conexão: ' + e.message;
+            erroDiv.style.display = 'block';
+        }
+    }
+
+    // ── Dropdowns ─────────────────────────────────────────────────────────────
+    async function carregarDropdowns() {
+        try {
+            const resp = await fetch('/api/eventos/dropdowns');
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+
+            popularMultiselect('tagsBox', 'tagsEmpty', data.tags || [], function(t) {
+                return { id: t.id, label: t.nome + (t.areaConhecimento ? ' — ' + t.areaConhecimento : ''), name: 'tagIds' };
+            });
+            popularMultiselect('palestrantesBox', 'palestrantesEmpty', data.palestrantes || [], function(p) {
+                return { id: p.id, label: p.nome + (p.titulo ? ' · ' + p.titulo : ''), name: 'palestranteIds' };
+            });
+            popularMultiselect('patrocinadoresBox', 'patrocinadoresEmpty', data.patrocinadores || [], function(p) {
+                return { id: p.id, label: p.nome + (p.nivelPatrocinio ? ' [' + p.nivelPatrocinio + ']' : ''), name: 'patrocinadorIds' };
+            });
+        } catch (e) {
+            ['tagsEmpty', 'palestrantesEmpty', 'patrocinadoresEmpty'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = 'Não foi possível carregar — verifique se o servidor está rodando.';
+            });
+        }
+    }
+
+    function popularMultiselect(boxId, emptyId, items, mapper) {
+        var box = document.getElementById(boxId);
+        var empty = document.getElementById(emptyId);
+        if (!box) return;
+        if (!items.length) {
+            if (empty) empty.textContent = 'Nenhum item cadastrado ainda.';
+            return;
+        }
+        if (empty) empty.remove();
+        items.forEach(function(item) {
+            var mapped = mapper(item);
+            var lbl = document.createElement('label');
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.name = mapped.name;
+            cb.value = mapped.id;
+            lbl.appendChild(cb);
+            lbl.appendChild(document.createTextNode(' ' + mapped.label));
+            box.appendChild(lbl);
+        });
+    }
+
+    window.onload = carregarDropdowns;
+</script>
+</body>
+</html>

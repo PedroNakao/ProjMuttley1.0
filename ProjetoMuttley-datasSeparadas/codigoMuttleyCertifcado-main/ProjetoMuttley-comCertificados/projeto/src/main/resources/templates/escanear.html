@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presença &amp; Cadastro</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --border: #e0e0e0;
+            --border-light: #eeeeee;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --text-placeholder: #aaaaaa;
+            --accent: #3a3a3a;
+            --accent-hover: #111;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166634;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --error-text: #991b1b;
+            --warn-bg: #fffbeb;
+            --warn-border: #fde68a;
+            --warn-text: #92400e;
+            --radius-sm: 7px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .container { max-width: 540px; margin: 0 auto; }
+
+        /* HEADER */
+        .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+        .header-icon {
+            width: 46px; height: 46px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+        .header p  { color: var(--text-muted); font-size: 0.82rem; margin-top: 2px; }
+
+        /* NAV */
+        .nav-links { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .nav-links a {
+            font-size: 0.82rem; color: var(--text-muted);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 1px;
+            transition: color 0.15s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* CONSOLE */
+        .console-box {
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .console-label {
+            font-size: 0.72rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.07em;
+            color: var(--text-muted); margin-bottom: 0.4rem;
+        }
+        .console-msg { font-size: 0.9rem; color: var(--text); }
+        .console-msg.is-success { color: var(--success-text); }
+        .console-msg.is-error   { color: var(--error-text); }
+        .console-msg.is-warn    { color: var(--warn-text); }
+
+        /* QR BOX */
+        .qr-box {
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .qr-icon { font-size: 1.5rem; }
+        .qr-label { font-size: 0.82rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .qr-row   { display: flex; align-items: center; gap: 0.5rem; }
+        .qr-prefix { font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; }
+        .input-qr {
+            width: 72px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.3rem 0.5rem;
+            color: var(--text);
+            font-family: inherit; font-size: 0.875rem;
+            outline: none; text-align: center;
+            transition: border-color 0.15s;
+        }
+        .input-qr:focus { border-color: #888; }
+        .qr-hint { font-size: 0.75rem; color: var(--text-placeholder); margin-top: 0.2rem; }
+
+        /* DIVIDER */
+        .divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.5rem 0; }
+        .divider hr { flex: 1; border: none; border-top: 1px solid var(--border-light); }
+        .divider span { font-size: 0.78rem; color: var(--text-placeholder); white-space: nowrap; }
+
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .card-title    { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+        .card-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+
+        /* FIELDS */
+        .field { margin-bottom: 1rem; }
+        .field-label {
+            font-size: 0.82rem; font-weight: 500; color: #444;
+            margin-bottom: 0.4rem; display: block;
+        }
+        .field-label .optional { font-weight: 400; color: var(--text-placeholder); margin-left: 0.3rem; }
+
+        .input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.9rem;
+            color: var(--text);
+            font-family: inherit; font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input:focus { border-color: #888; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+        .input::placeholder { color: var(--text-placeholder); }
+        .input.is-invalid { border-color: #fca5a5; }
+
+        .field-error { font-size: 0.78rem; color: var(--error-text); margin-top: 0.3rem; display: none; }
+        .field-error.visible { display: block; }
+
+        .btn {
+            width: 100%;
+            padding: 0.7rem 1.2rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-family: inherit; font-size: 0.875rem; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-outline {
+            background: transparent; color: var(--text-muted);
+            border: 1px solid var(--border); margin-top: 0.6rem;
+        }
+        .btn-outline:hover { background: #f5f5f5; color: var(--text); }
+
+        /* TOGGLE LINK */
+        .toggle-link { text-align: center; margin-top: 1rem; }
+        .toggle-link a {
+            font-size: 0.85rem; color: var(--text-muted);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--border);
+            transition: color 0.15s;
+        }
+        .toggle-link a:hover { color: var(--text); }
+
+        #secaoCadastro { display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-icon">📋</div>
+        <div>
+            <h1>Presença &amp; Cadastro</h1>
+            <p>Registre presença ou cadastre-se como participante</p>
+        </div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav-links">
+        <a th:href="@{/eventos/cadastrar}">📅 Cadastrar Evento</a>
+        <a th:href="@{/tag/formulario}">🏷 Tags</a>
+    </div>
+
+    <!-- CONSOLE DE RETORNO DO SERVIDOR -->
+    <div class="console-box">
+        <div class="console-label">Retorno do servidor</div>
+        <p class="console-msg"
+           th:classappend="${mensagem != null and (mensagem.startsWith('Presença') or mensagem.startsWith('Cadastro')) ? 'is-success' : (mensagem != null and mensagem.startsWith('Erro') ? 'is-error' : (mensagem != null and mensagem.startsWith('Ops') ? 'is-warn' : ''))}"
+           th:text="${mensagem} ?: 'Nenhuma ação executada ainda.'">
+            Nenhuma ação executada ainda.
+        </p>
+    </div>
+
+    <!-- SIMULADOR DE QR CODE -->
+    <div class="qr-box">
+        <div class="qr-icon">📷</div>
+        <div style="flex:1;">
+            <div class="qr-label">Simulador de QR Code — ID do Evento</div>
+            <div class="qr-row">
+                <span class="qr-prefix">Evento #</span>
+                <input type="number" class="input-qr" id="eventoIdInput" value="1" min="1" oninput="atualizarRotas()" />
+            </div>
+            <div class="qr-hint">* Altere o número para simular eventos diferentes</div>
+        </div>
+    </div>
+
+    <!-- FORMULÁRIO DE PRESENÇA POR CPF -->
+    <div class="card">
+        <div class="card-title">Já sou cadastrado</div>
+        <div class="card-subtitle">Digite seu CPF para registrar presença no evento selecionado</div>
+
+        <form id="formPresenca" method="POST" onsubmit="return validarCpfPresenca()">
+            <div class="field">
+                <label class="field-label" for="cpfInput">CPF</label>
+                <input class="input" type="text" id="cpfInput" name="cpf"
+                       placeholder="Apenas números (11 dígitos)"
+                       maxlength="11" required autocomplete="off"
+                       oninput="this.value=this.value.replace(/\D/g,'')" />
+                <span class="field-error" id="erroCpfPresenca">CPF deve ter exatamente 11 dígitos.</span>
+            </div>
+            <button class="btn btn-primary" type="submit">✓ Registrar Presença</button>
+        </form>
+    </div>
+
+    <!-- TOGGLE LINK -->
+    <div class="toggle-link">
+        <a href="#" onclick="alternarFormulario(); return false;" id="toggleLink">
+            Não tenho cadastro → Clique aqui para se cadastrar
+        </a>
+    </div>
+
+    <!-- FORMULÁRIO DE CADASTRO DE PARTICIPANTE -->
+    <div id="secaoCadastro">
+        <div class="divider">
+            <hr><span>Cadastro de novo participante</span><hr>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Primeiro acesso</div>
+            <div class="card-subtitle">Preencha seus dados para participar dos eventos</div>
+
+            <form id="formCadastro" th:action="@{/participantes/cadastrar}" method="POST" onsubmit="return validarFormCadastro()">
+                <div class="field">
+                    <label class="field-label" for="nome">Nome completo</label>
+                    <input class="input" type="text" id="nome" name="nome"
+                           placeholder="Seu nome completo" required autocomplete="off" />
+                    <span class="field-error" id="erroNome">Nome é obrigatório.</span>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="cpf">CPF</label>
+                    <input class="input" type="text" id="cpf" name="cpf"
+                           placeholder="Apenas números (11 dígitos)" maxlength="11" required autocomplete="off"
+                           oninput="this.value=this.value.replace(/\D/g,'')" />
+                    <span class="field-error" id="erroCpf">CPF deve ter exatamente 11 dígitos.</span>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="email">E-mail</label>
+                    <input class="input" type="email" id="email" name="email"
+                           placeholder="seu@email.com" required autocomplete="off" />
+                    <span class="field-error" id="erroEmail">Informe um e-mail válido.</span>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="linkedin">
+                        LinkedIn <span class="optional">(opcional)</span>
+                    </label>
+                    <input class="input" type="text" id="linkedin" name="linkedin"
+                           placeholder="linkedin.com/in/seuperfil" autocomplete="off" />
+                </div>
+                <button class="btn btn-primary" type="submit">Cadastrar</button>
+                <button class="btn btn-outline" type="button" onclick="alternarFormulario()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function atualizarRotas() {
+        var eventoId = document.getElementById("eventoIdInput").value || 1;
+        document.getElementById("formPresenca").action = "/participantes/escanear/evento/" + eventoId;
+    }
+
+    function alternarFormulario() {
+        var secao = document.getElementById("secaoCadastro");
+        var link  = document.getElementById("toggleLink");
+        var aberto = secao.style.display === "none" || secao.style.display === "";
+        secao.style.display = aberto ? "block" : "none";
+        link.textContent = aberto
+            ? "↑ Fechar formulário de cadastro"
+            : "Não tenho cadastro → Clique aqui para se cadastrar";
+        if (aberto) secao.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function validarCpfPresenca() {
+        var cpf = document.getElementById("cpfInput").value.replace(/\D/g, "");
+        var erro = document.getElementById("erroCpfPresenca");
+        var input = document.getElementById("cpfInput");
+        if (cpf.length !== 11) {
+            erro.classList.add("visible");
+            input.classList.add("is-invalid");
+            return false;
+        }
+        erro.classList.remove("visible");
+        input.classList.remove("is-invalid");
+        return true;
+    }
+
+    function validarFormCadastro() {
+        var ok = true;
+
+        var nome = document.getElementById("nome").value.trim();
+        var erroNome = document.getElementById("erroNome");
+        if (!nome) {
+            erroNome.classList.add("visible");
+            document.getElementById("nome").classList.add("is-invalid");
+            ok = false;
+        } else {
+            erroNome.classList.remove("visible");
+            document.getElementById("nome").classList.remove("is-invalid");
+        }
+
+        var cpf = document.getElementById("cpf").value.replace(/\D/g, "");
+        var erroCpf = document.getElementById("erroCpf");
+        if (cpf.length !== 11) {
+            erroCpf.classList.add("visible");
+            document.getElementById("cpf").classList.add("is-invalid");
+            ok = false;
+        } else {
+            erroCpf.classList.remove("visible");
+            document.getElementById("cpf").classList.remove("is-invalid");
+        }
+
+        var email = document.getElementById("email").value.trim();
+        var erroEmail = document.getElementById("erroEmail");
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            erroEmail.classList.add("visible");
+            document.getElementById("email").classList.add("is-invalid");
+            ok = false;
+        } else {
+            erroEmail.classList.remove("visible");
+            document.getElementById("email").classList.remove("is-invalid");
+        }
+
+        return ok;
+    }
+
+    window.onload = atualizarRotas;
+</script>
+</body>
+</html>

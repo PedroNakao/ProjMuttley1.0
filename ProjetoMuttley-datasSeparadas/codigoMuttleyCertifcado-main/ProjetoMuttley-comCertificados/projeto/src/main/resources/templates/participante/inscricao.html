@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${evento != null ? 'Inscrição — ' + evento.titulo : 'Inscrição no Evento'}">Inscrição no Evento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange:       #F97316;
+            --orange-light: #FFF7ED;
+            --orange-dark:  #EA580C;
+            --bg:           #F8FAFC;
+            --surface:      #FFFFFF;
+            --border:       #E2E8F0;
+            --text:         #0F172A;
+            --text-2:       #475569;
+            --text-3:       #94A3B8;
+            --green:        #22C55E;
+            --green-light:  #F0FDF4;
+            --green-border: #BBF7D0;
+            --green-text:   #166534;
+            --error-bg:     #FEF2F2;
+            --error-border: #FECACA;
+            --error-text:   #991B1B;
+            --warn-bg:      #FFFBEB;
+            --warn-border:  #FDE68A;
+            --warn-text:    --warn-text:    #92400E;
+            --radius:       16px;
+            --radius-sm:    10px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2.5rem 1rem;
+        }
+
+        .container { max-width: 520px; margin: 0 auto; }
+
+        /* EVENT HERO */
+        .event-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            display: flex; align-items: flex-start; gap: 1rem;
+        }
+        .hero-date {
+            min-width: 58px;
+            background: var(--orange-light);
+            border: 2px solid #FDBA74;
+            border-radius: 12px;
+            text-align: center;
+            padding: 0.5rem 0.3rem;
+        }
+        .hero-day { font-size: 1.75rem; font-weight: 800; color: var(--orange-dark); line-height: 1; }
+        .hero-mon { font-size: 0.7rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: .06em; }
+        .hero-info { flex: 1; min-width: 0; }
+        .hero-badge {
+            display: inline-block;
+            padding: .2rem .65rem;
+            border-radius: 999px;
+            font-size: .72rem; font-weight: 700;
+            background: #EDE9FE; color: #7C3AED;
+            margin-bottom: .35rem;
+        }
+        .hero-title { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
+        .hero-meta { margin-top: .5rem; display: flex; flex-direction: column; gap: .25rem; }
+        .meta-row { display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--text-2); }
+
+        /* NAV */
+        .back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-3); text-decoration: none; margin-bottom: 1rem; font-weight: 500; }
+        .back-link:hover { color: var(--text); }
+
+        /* ALERT */
+        .alert {
+            padding: .875rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: .875rem; font-weight: 500;
+            display: flex; align-items: flex-start; gap: .5rem;
+        }
+        .alert-success { background: var(--green-light); border: 1px solid var(--green-border); color: var(--green-text); }
+        .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);  color: var(--error-text); }
+        .alert-warn    { background: var(--warn-bg);    border: 1px solid var(--warn-border);    color: var(--warn-text); }
+
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+        .card-header { padding: 1.25rem 1.5rem 0; }
+        .card-title  { font-size: 1rem; font-weight: 800; color: var(--text); }
+        .card-sub    { font-size: .82rem; color: var(--text-3); margin-top: .15rem; font-weight: 500; }
+        .card-body   { padding: 1.25rem 1.5rem 1.5rem; }
+
+        /* TABS */
+        .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+        .tab {
+            flex: 1; padding: .85rem .5rem;
+            font-size: .85rem; font-weight: 600;
+            text-align: center; cursor: pointer;
+            color: var(--text-3);
+            border-bottom: 2.5px solid transparent;
+            transition: all .15s;
+        }
+        .tab:hover { color: var(--text-2); }
+        .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+        /* FIELDS */
+        .field { margin-bottom: 1rem; }
+        .field:last-child { margin-bottom: 0; }
+        .field-label {
+            display: block; font-size: .82rem; font-weight: 600; color: var(--text-2);
+            margin-bottom: .4rem;
+        }
+        .field-label .opt { font-weight: 400; color: var(--text-3); margin-left: .3rem; }
+
+        .input {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: .7rem 1rem;
+            color: var(--text);
+            font-family: inherit; font-size: .875rem;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,.12); }
+        .input::placeholder { color: var(--text-3); }
+        .input.is-error { border-color: #FCA5A5; }
+
+        .field-hint  { font-size: .75rem; color: var(--text-3); margin-top: .3rem; }
+        .field-error { font-size: .75rem; color: var(--error-text); margin-top: .3rem; display: none; font-weight: 500; }
+        .field-error.show { display: block; }
+
+        /* BUTTONS */
+        .btn {
+            width: 100%; padding: .8rem 1.25rem;
+            border-radius: var(--radius-sm); border: none;
+            font-family: inherit; font-size: .9rem; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .4rem;
+            transition: all .15s;
+        }
+        .btn-primary {
+            background: var(--orange); color: white;
+            box-shadow: 0 3px 10px rgba(249,115,22,.35);
+        }
+        .btn-primary:hover  { background: var(--orange-dark); box-shadow: 0 4px 16px rgba(249,115,22,.45); }
+        .btn-primary:active { transform: scale(.98); }
+        .btn-outline {
+            background: transparent; color: var(--text-2);
+            border: 1.5px solid var(--border); margin-top: .6rem;
+        }
+        .btn-outline:hover { background: var(--bg); }
+
+        /* PANEL TOGGLE */
+        .panel { display: none; }
+        .panel.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a class="back-link" th:href="@{/admin/dashboard}">← Voltar ao painel</a>
+
+    <div class="event-hero" th:if="${evento != null}">
+        <div class="hero-date">
+            <div class="hero-day" th:text="${#temporals.format(evento.dataInicio, 'dd')}">00</div>
+            <div class="hero-mon" th:text="${#temporals.format(evento.dataInicio, 'MMM')}">MES</div>
+        </div>
+        <div class="hero-info">
+            <span class="hero-badge" th:text="${evento.tipoEvento.descricao}">Tipo</span>
+            <div class="hero-title" th:text="${evento.titulo}">Título do Evento</div>
+            <div class="hero-meta">
+                <div class="meta-row">🕐 <span th:text="${#temporals.format(evento.dataInicio, 'HH:mm')}+'h'">00:00h</span></div>
+                <div class="meta-row" th:if="${evento.local}">📍 <span th:text="${evento.local}">Local</span></div>
+                <div class="meta-row">⭐ <span th:text="${evento.pontosParticipacao}+' pontos de participação'">1 ponto</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-error" th:if="${evento == null}">
+        ⚠️ Evento não encontrado. Verifique o ID informado.
+    </div>
+
+    <div th:if="${mensagem}" class="alert"
+         th:classappend="${mensagem.startsWith('Erro') or #strings.contains(mensagem, 'Erro') ? 'alert-error' :
+                          (#strings.contains(mensagem, 'Ops') or #strings.contains(mensagem, 'já') ? 'alert-warn' : 'alert-success')}"
+         th:text="${mensagem}">
+    </div>
+
+    <div class="card" th:if="${evento != null}">
+        <div class="tabs">
+            <div class="tab active" id="tabPresenca" onclick="mudarTab('presenca')">✓ Já sou cadastrado</div>
+            <div class="tab" id="tabCadastro" onclick="mudarTab('cadastro')">+ Novo cadastro</div>
+        </div>
+
+        <div class="panel active" id="panelPresenca">
+            <div class="card-header">
+                <div class="card-title">Registrar Presença</div>
+                <div class="card-sub">Digite seu CPF para confirmar presença no evento</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/participante/confirmar-presenca}"
+                      method="POST" onsubmit="return validarCpf('cpfPresenca','erroCpfPresenca')">
+                    <input type="hidden" name="eventoId" th:value="${evento.id}" />
+                    
+                    <div class="field">
+                        <label class="field-label" for="cpfPresenca">CPF</label>
+                        <input class="input" type="text" id="cpfPresenca" name="cpf"
+                               th:value="${cpfDigitado}"
+                               placeholder="Apenas números (11 dígitos)" maxlength="11" required
+                               oninput="this.value=this.value.replace(/\D/g,'')" autocomplete="off" />
+                        <span class="field-error" id="erroCpfPresenca">CPF deve ter exatamente 11 dígitos.</span>
+                    </div>
+                    <button class="btn btn-primary" type="submit">✓ Confirmar Presença</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel" id="panelCadastro">
+            <div class="card-header">
+                <div class="card-title">Cadastro e Inscrição</div>
+                <div class="card-sub">Preencha seus dados — já ficará inscrito no evento</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/participante/cadastrar-e-inscrever}" method="POST"
+                      onsubmit="return validarFormCadastro()">
+                    <input type="hidden" name="eventoId" th:value="${evento.id}" />
+
+                    <div class="field">
+                        <label class="field-label" for="nomeCad">Nome completo</label>
+                        <input class="input" type="text" id="nomeCad" name="nome"
+                               placeholder="Seu nome completo" required autocomplete="off" />
+                        <span class="field-error" id="erroNome">Nome é obrigatório.</span>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="cpfCad">CPF</label>
+                        <input class="input" type="text" id="cpfCad" name="cpf"
+                               placeholder="Apenas números (11 dígitos)"
+                               maxlength="11" required autocomplete="off"
+                               oninput="this.value=this.value.replace(/\D/g,'')" />
+                        <span class="field-error" id="erroCpf">CPF deve ter exatamente 11 dígitos.</span>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="emailCad">E-mail</label>
+                        <input class="input" type="email" id="emailCad" name="email"
+                               placeholder="seu@email.com" required autocomplete="off" />
+                        <span class="field-error" id="erroEmail">Informe um e-mail válido.</span>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label" for="linkedinCad">
+                            LinkedIn <span class="opt">(opcional)</span>
+                        </label>
+                        <input class="input" type="text" id="linkedinCad" name="linkedin"
+                               placeholder="linkedin.com/in/seuperfil" autocomplete="off" />
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">Cadastrar e confirmar presença →</button>
+                    <button class="btn btn-outline" type="button" onclick="mudarTab('presenca')">Já tenho cadastro</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    function mudarTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab' + (tab === 'presenca' ? 'Presenca' : 'Cadastro')).classList.add('active');
+        document.getElementById('panel' + (tab === 'presenca' ? 'Presenca' : 'Cadastro')).classList.add('active');
+    }
+
+    // Sincronização de estado vinda do Spring Boot
+    document.addEventListener("DOMContentLoaded", function() {
+        var abaServidor = /*[[${abaAtiva}]]*/ 'presenca';
+        
+        if (abaServidor === 'cadastro') {
+            mudarTab('cadastro');
+        } else {
+            mudarTab('presenca');
+        }
+        
+        const params = new URLSearchParams(location.search);
+        if (params.get('tab') === 'cadastro') mudarTab('cadastro');
+    });
+
+    function validarCpf(inputId, erroId) {
+        const val = document.getElementById(inputId).value.replace(/\D/g,'');
+        const err = document.getElementById(erroId);
+        if (val.length !== 11) {
+            err.classList.add('show');
+            document.getElementById(inputId).classList.add('is-error');
+            return false;
+        }
+        err.classList.remove('show');
+        document.getElementById(inputId).classList.remove('is-error');
+        return true;
+    }
+
+    function validarFormCadastro() {
+        let ok = true;
+
+        const nome = document.getElementById('nomeCad').value.trim();
+        if (!nome) {
+            document.getElementById('erroNome').classList.add('show');
+            document.getElementById('nomeCad').classList.add('is-error');
+            ok = false;
+        } else {
+            document.getElementById('erroNome').classList.remove('show');
+            document.getElementById('nomeCad').classList.remove('is-error');
+        }
+
+        const cpf = document.getElementById('cpfCad').value.replace(/\D/g,'');
+        if (cpf.length !== 11) {
+            document.getElementById('erroCpf').classList.add('show');
+            document.getElementById('cpfCad').classList.add('is-error');
+            ok = false;
+        } else {
+            document.getElementById('erroCpf').classList.remove('show');
+            document.getElementById('cpfCad').classList.remove('is-error');
+        }
+
+        const email = document.getElementById('emailCad').value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            document.getElementById('erroEmail').classList.add('show');
+            document.getElementById('emailCad').classList.add('is-error');
+            ok = false;
+        } else {
+            document.getElementById('erroEmail').classList.remove('show');
+            document.getElementById('emailCad').classList.remove('is-error');
+        }
+
+        return ok;
+    }
+</script>
+</body>
+</html>
