@@ -276,15 +276,6 @@
         }
         .btn-qr:hover { background: var(--text); color: white; border-color: var(--text); }
 
-        .inscrito-badge {
-            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-            padding: 0.55rem; border-radius: 8px;
-            border: 1.5px solid var(--green-border);
-            background: var(--green-light);
-            color: var(--green-text);
-            font-size: 0.8rem; font-weight: 700;
-        }
-
         /* ── PARTICIPANTES CONTAGEM ─────────────────── */
         .participants-bar {
             display: flex; align-items: center; gap: 0.5rem;
@@ -308,10 +299,6 @@
         .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
         .empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.5rem; }
         .empty-sub   { font-size: 0.85rem; color: var(--text-3); }
-
-        /* ── LOADING ─────────────────────────────────── */
-        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
-        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
         /* ── MODAL QR ────────────────────────────────── */
         .modal-overlay {
@@ -340,19 +327,30 @@
             padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-2);
             word-break: break-all; margin-bottom: 1rem; text-align: left;
         }
-        .modal-actions { display: flex; gap: 0.5rem; }
-        .btn-modal-close {
-            flex:1; padding: 0.65rem; border-radius: 8px;
-            background: var(--bg); border: 1px solid var(--border);
-            font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+
+        /* ── MODAL ACTIONS — 2 linhas ────────────────── */
+        .modal-actions {
+            display: flex; flex-direction: column; gap: 0.5rem;
         }
-        .btn-modal-open {
-            flex:1; padding: 0.65rem; border-radius: 8px;
-            background: var(--orange); color: white; border: none;
-            font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer;
-            text-decoration: none; display: flex; align-items: center; justify-content: center;
+        .modal-actions-row {
+            display: flex; gap: 0.5rem;
         }
+        .btn-modal {
+            flex: 1; padding: 0.65rem; border-radius: 8px;
+            font-family: inherit; font-size: 0.82rem; font-weight: 700;
+            cursor: pointer; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+            transition: all 0.15s;
+        }
+        .btn-modal-close  { background: var(--bg); border: 1px solid var(--border); color: var(--text-2); }
+        .btn-modal-close:hover { background: #eee; }
+        .btn-modal-open   { background: var(--orange); color: white; text-decoration: none; }
         .btn-modal-open:hover { background: var(--orange-dark); }
+        .btn-modal-copy   { background: var(--blue-light); color: var(--blue); border: 1px solid #BFDBFE; }
+        .btn-modal-copy:hover { background: #DBEAFE; }
+        .btn-modal-copy.copied { background: var(--green-light); color: var(--green-text); border-color: var(--green-border); }
+        .btn-modal-download { background: var(--purple-light); color: var(--purple); border: 1px solid #DDD6FE; }
+        .btn-modal-download:hover { background: #EDE9FE; }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
@@ -401,7 +399,6 @@
             <button class="pill" onclick="setFiltro('WORKSHOP', this)">Workshop</button>
             <button class="pill" onclick="setFiltro('PALESTRA', this)">Palestra</button>
             <button class="pill" onclick="setFiltro('AULA_ABERTA', this)">Aula Aberta</button>
-
         </div>
     </div>
 
@@ -445,6 +442,7 @@
     </div>
 </main>
 
+<!-- MODAL QR CODE -->
 <div class="modal-overlay" id="modalQr">
     <div class="modal">
         <div class="modal-title">QR Code do Evento</div>
@@ -452,8 +450,24 @@
         <div class="qr-container" id="qrCanvas"></div>
         <div class="qr-url" id="qrUrl">—</div>
         <div class="modal-actions">
-            <button class="btn-modal-close" onclick="fecharModal()">Fechar</button>
-            <a class="btn-modal-open" id="qrLink" href="#" target="_blank">Abrir formulário →</a>
+            <!-- linha 1: copiar link + abrir formulário -->
+            <div class="modal-actions-row">
+                <button class="btn-modal btn-modal-copy" id="btnCopiar" onclick="copiarLink()">
+                    📋 Copiar link
+                </button>
+                <a class="btn-modal btn-modal-open" id="qrLink" href="#" target="_blank">
+                    Abrir formulário →
+                </a>
+            </div>
+            <!-- linha 2: baixar QR + fechar -->
+            <div class="modal-actions-row">
+                <button class="btn-modal btn-modal-download" onclick="baixarQr()">
+                    ⬇ Baixar QR Code
+                </button>
+                <button class="btn-modal btn-modal-close" onclick="fecharModal()">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -475,6 +489,7 @@
     let todosEventos = [];
     let filtroAtivo = 'todos';
     let busca = '';
+    let urlAtual = '';
 
     async function carregarEventos() {
         try {
@@ -482,7 +497,6 @@
             const data = await r.json();
             todosEventos = data.eventos || [];
 
-            // stats
             document.getElementById('statTotal').textContent = todosEventos.length;
             document.getElementById('statAtivos').textContent = todosEventos.filter(e => e.ativo).length;
             document.getElementById('statPart').textContent = data.totalParticipantes || 0;
@@ -550,7 +564,6 @@
             : '';
 
         const urlInscricao = '/participante/cadastrar?eventoId=' + e.id;
-        const urlQr = encodeURIComponent(location.origin + urlInscricao);
 
         return `
         <div class="event-card" data-tipo="${e.tipoEvento}" data-id="${e.id}">
@@ -586,28 +599,100 @@
 
     // ── QR CODE ──────────────────────────────────
     let qrInstance = null;
+
     function abrirQr(eventoId, titulo) {
-        const url = location.origin + '/participante/cadastrar?eventoId=' + eventoId;
+        urlAtual = location.origin + '/participante/cadastrar?eventoId=' + eventoId;
         document.getElementById('qrEventoNome').textContent = titulo;
-        document.getElementById('qrUrl').textContent = url;
-        document.getElementById('qrLink').href = url;
+        document.getElementById('qrUrl').textContent = urlAtual;
+        document.getElementById('qrLink').href = urlAtual;
+
+        // Reset botão copiar
+        const btnCopiar = document.getElementById('btnCopiar');
+        btnCopiar.textContent = '📋 Copiar link';
+        btnCopiar.classList.remove('copied');
 
         const canvas = document.getElementById('qrCanvas');
         canvas.innerHTML = '';
         qrInstance = new QRCode(canvas, {
-            text: url,
+            text: urlAtual,
             width: 200, height: 200,
             colorDark: '#0F172A', colorLight: '#FFFFFF',
             correctLevel: QRCode.CorrectLevel.M
         });
+
         document.getElementById('modalQr').classList.add('open');
         document.body.style.overflow = 'hidden';
     }
+
     function fecharModal() {
         document.getElementById('modalQr').classList.remove('open');
         document.body.style.overflow = '';
         document.getElementById('qrCanvas').innerHTML = '';
+        qrInstance = null;
     }
+
+    // ── Copiar link ──────────────────────────────
+    function copiarLink() {
+        if (!urlAtual) return;
+        navigator.clipboard.writeText(urlAtual).then(function() {
+            const btn = document.getElementById('btnCopiar');
+            btn.textContent = '✓ Copiado!';
+            btn.classList.add('copied');
+            setTimeout(function() {
+                btn.textContent = '📋 Copiar link';
+                btn.classList.remove('copied');
+            }, 2000);
+        }).catch(function() {
+            // fallback para navegadores sem clipboard API
+            const ta = document.createElement('textarea');
+            ta.value = urlAtual;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            const btn = document.getElementById('btnCopiar');
+            btn.textContent = '✓ Copiado!';
+            btn.classList.add('copied');
+            setTimeout(function() {
+                btn.textContent = '📋 Copiar link';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // ── Baixar QR Code como PNG ──────────────────
+    function baixarQr() {
+        // A lib QRCode.js gera um <img> ou <canvas> dentro do container
+        const container = document.getElementById('qrCanvas');
+        const img = container.querySelector('img');
+        const canvas = container.querySelector('canvas');
+
+        if (canvas) {
+            // Preferência: canvas → PNG direto
+            const link = document.createElement('a');
+            const nomeEvento = document.getElementById('qrEventoNome').textContent.trim()
+                .replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'qrcode';
+            link.download = 'qrcode-' + nomeEvento + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } else if (img) {
+            // Fallback: cria canvas a partir da imagem e faz download
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 200;
+            tmpCanvas.height = 200;
+            const ctx = tmpCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 200, 200);
+            const link = document.createElement('a');
+            const nomeEvento = document.getElementById('qrEventoNome').textContent.trim()
+                .replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'qrcode';
+            link.download = 'qrcode-' + nomeEvento + '.png';
+            link.href = tmpCanvas.toDataURL('image/png');
+            link.click();
+        }
+    }
+
     document.getElementById('modalQr').addEventListener('click', function(e) {
         if (e.target === this) fecharModal();
     });
