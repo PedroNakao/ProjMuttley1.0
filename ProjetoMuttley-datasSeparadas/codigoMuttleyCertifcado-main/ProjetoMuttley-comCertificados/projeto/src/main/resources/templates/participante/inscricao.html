@@ -28,7 +28,7 @@
             --error-text:   #991B1B;
             --warn-bg:      #FFFBEB;
             --warn-border:  #FDE68A;
-            --warn-text:    --warn-text:    #92400E;
+            --warn-text:    #92400E;
             --radius:       16px;
             --radius-sm:    10px;
         }
@@ -74,10 +74,6 @@
         .hero-title { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
         .hero-meta { margin-top: .5rem; display: flex; flex-direction: column; gap: .25rem; }
         .meta-row { display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--text-2); }
-
-        /* NAV */
-        .back-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-3); text-decoration: none; margin-bottom: 1rem; font-weight: 500; }
-        .back-link:hover { color: var(--text); }
 
         /* ALERT */
         .alert {
@@ -173,7 +169,7 @@
 <body>
 <div class="container">
 
-    <a class="back-link" th:href="@{/admin/dashboard}">← Voltar ao painel</a>
+    <!-- botão "Voltar ao painel" removido intencionalmente -->
 
     <div class="event-hero" th:if="${evento != null}">
         <div class="hero-date">
@@ -216,7 +212,7 @@
                 <form th:action="@{/participante/confirmar-presenca}"
                       method="POST" onsubmit="return validarCpf('cpfPresenca','erroCpfPresenca')">
                     <input type="hidden" name="eventoId" th:value="${evento.id}" />
-                    
+
                     <div class="field">
                         <label class="field-label" for="cpfPresenca">CPF</label>
                         <input class="input" type="text" id="cpfPresenca" name="cpf"
@@ -288,16 +284,13 @@
         document.getElementById('panel' + (tab === 'presenca' ? 'Presenca' : 'Cadastro')).classList.add('active');
     }
 
-    // Sincronização de estado vinda do Spring Boot
     document.addEventListener("DOMContentLoaded", function() {
         var abaServidor = /*[[${abaAtiva}]]*/ 'presenca';
-        
         if (abaServidor === 'cadastro') {
             mudarTab('cadastro');
         } else {
             mudarTab('presenca');
         }
-        
         const params = new URLSearchParams(location.search);
         if (params.get('tab') === 'cadastro') mudarTab('cadastro');
     });
@@ -351,5 +344,7 @@
         return ok;
     }
 </script>
+</body>
+</html>
 </body>
 </html>
