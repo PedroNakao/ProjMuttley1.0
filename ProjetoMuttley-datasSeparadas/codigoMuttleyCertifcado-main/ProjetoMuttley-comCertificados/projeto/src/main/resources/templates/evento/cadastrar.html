@@ -4,109 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastrar Evento</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #f5f5f5;
-            --surface: #ffffff;
-            --border: #e0e0e0;
-            --border-light: #eeeeee;
-            --text: #1a1a1a;
-            --text-muted: #6b6b6b;
-            --text-placeholder: #aaaaaa;
-            --accent: #3a3a3a;
-            --accent-hover: #111;
-            --success-bg: #f0fdf4;
-            --success-border: #bbf7d0;
+            --orange:       #F97316;
+            --orange-light: #FFF7ED;
+            --orange-dark:  #EA580C;
+            --bg:           #F8FAFC;
+            --surface:      #FFFFFF;
+            --border:       #E2E8F0;
+            --text:         #0F172A;
+            --text-2:       #475569;
+            --text-3:       #94A3B8;
+            --success-bg:   #F0FDF4;
+            --success-border:#BBF7D0;
             --success-text: #166534;
-            --error-bg: #fef2f2;
-            --error-border: #fecaca;
-            --error-text: #991b1b;
-            --radius-sm: 7px;
+            --error-bg:     #FEF2F2;
+            --error-border: #FECACA;
+            --error-text:   #991B1B;
+            --radius:       16px;
+            --radius-sm:    10px;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            padding: 2.5rem 1.5rem;
         }
 
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 1.5rem 1.25rem 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-icon {
+            width: 36px; height: 36px; background: var(--orange);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.1rem;
+        }
+        .logo-text { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .logo-sub  { font-size: 0.7rem; color: var(--text-3); font-weight: 500; }
+        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
+        .nav-section-label {
+            font-size: 0.65rem; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 0.5rem 0.6rem 0.25rem;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);
+            font-size: 0.85rem; font-weight: 500; color: var(--text-2);
+            text-decoration: none; transition: background 0.15s, color 0.15s;
+        }
+        .nav-item:hover { background: var(--bg); color: var(--text); }
+        .nav-item.active { background: var(--orange-light); color: var(--orange-dark); font-weight: 600; }
+        .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+        /* ── MAIN ── */
+        .main { margin-left: 240px; min-height: 100vh; padding: 2.5rem 2rem; }
         .container { max-width: 720px; margin: 0 auto; }
 
+        /* ── HEADER ── */
         .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
         .header-icon {
-            width: 46px; height: 46px;
-            background: #f0f0f0;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
+            width: 46px; height: 46px; background: var(--orange-light);
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; font-size: 1.3rem;
+            border: 1px solid #FDBA74; flex-shrink: 0;
         }
-        .header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; }
-        .header p  { color: var(--text-muted); font-size: 0.82rem; margin-top: 2px; }
+        .header h1 { font-size: 1.4rem; font-weight: 800; color: var(--text); line-height: 1.2; letter-spacing: -0.02em; }
+        .header p  { color: var(--text-3); font-size: 0.82rem; margin-top: 2px; font-weight: 500; }
 
-        .nav-links { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .nav-links a {
-            font-size: 0.82rem; color: var(--text-muted);
-            text-decoration: none;
-            border-bottom: 1px dashed var(--border);
-            padding-bottom: 1px;
-        }
-        .nav-links a:hover { color: var(--text); }
-
+        /* ── ALERTS ── */
         .alert {
-            padding: 0.8rem 1rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 1.2rem;
-            font-size: 0.875rem;
+            padding: 0.8rem 1rem; border-radius: var(--radius-sm);
+            margin-bottom: 1.2rem; font-size: 0.875rem;
         }
         .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
         .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error-text); }
 
+        /* ── CARDS ── */
         .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            margin-bottom: 1.2rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.2rem;
         }
-        .card-title    { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
-        .card-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+        .card-title    { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+        .card-subtitle { color: var(--text-3); font-size: 0.82rem; margin-bottom: 1.2rem; font-weight: 500; }
 
+        /* ── FIELDS ── */
         .field { margin-bottom: 1rem; }
-        .field-label {
-            font-size: 0.82rem; font-weight: 500; color: #444;
-            margin-bottom: 0.4rem; display: block;
-        }
-        .field-label .optional { font-weight: 400; color: var(--text-placeholder); margin-left: 0.3rem; }
+        .field-label { font-size: 0.82rem; font-weight: 600; color: var(--text-2); margin-bottom: 0.4rem; display: block; }
+        .field-label .optional { font-weight: 400; color: var(--text-3); margin-left: 0.3rem; }
 
         .input, .select, .textarea {
-            width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0.65rem 0.9rem;
-            color: var(--text);
-            font-family: inherit; font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.65rem 0.9rem;
+            color: var(--text); font-family: inherit; font-size: 0.875rem;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
         }
         .input:focus, .select:focus, .textarea:focus {
-            border-color: #888;
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+            border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,.12);
         }
-        .input::placeholder, .textarea::placeholder { color: var(--text-placeholder); }
+        .input::placeholder, .textarea::placeholder { color: var(--text-3); }
         .textarea { resize: vertical; min-height: 90px; }
         .select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b6b6b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.9rem center;
-            padding-right: 2.2rem;
+            background-repeat: no-repeat; background-position: right 0.9rem center; padding-right: 2.2rem;
         }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -114,105 +131,112 @@
 
         .toggle-group { display: flex; gap: 1.5rem; flex-wrap: wrap; }
         .toggle-item { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-        .toggle-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+        .toggle-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--orange); cursor: pointer; }
         .toggle-item span { font-size: 0.875rem; color: var(--text); }
 
         .multiselect-box {
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--surface);
-            max-height: 150px;
-            overflow-y: auto;
-            padding: 0.4rem;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--surface); max-height: 150px; overflow-y: auto; padding: 0.4rem;
         }
         .multiselect-box label {
             display: flex; align-items: center; gap: 0.5rem;
-            padding: 0.35rem 0.5rem;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background 0.1s;
-            user-select: none;
+            padding: 0.35rem 0.5rem; border-radius: 5px;
+            font-size: 0.85rem; cursor: pointer;
+            transition: background 0.1s; user-select: none;
         }
-        .multiselect-box label:hover { background: #f5f5f5; }
-        .multiselect-box input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; }
-        .multiselect-empty { font-size: 0.82rem; color: var(--text-placeholder); padding: 0.5rem; display: block; }
+        .multiselect-box label:hover { background: var(--bg); }
+        .multiselect-box input[type="checkbox"] { accent-color: var(--orange); flex-shrink: 0; }
+        .multiselect-empty { font-size: 0.82rem; color: var(--text-3); padding: 0.5rem; display: block; }
 
+        /* ── BUTTONS ── */
         .btn {
-            padding: 0.7rem 1.4rem;
-            border-radius: var(--radius-sm);
-            border: none;
-            font-family: inherit; font-size: 0.875rem; font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
-            text-decoration: none;
-            display: inline-block;
+            padding: 0.7rem 1.4rem; border-radius: var(--radius-sm); border: none;
+            font-family: inherit; font-size: 0.875rem; font-weight: 700;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
         }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary { background: var(--orange); color: white; box-shadow: 0 2px 8px rgba(249,115,22,.35); }
+        .btn-primary:hover { background: var(--orange-dark); }
         .btn-primary:active { transform: scale(0.98); }
-        .btn-outline {
-            background: transparent; color: var(--text-muted);
-            border: 1px solid var(--border);
-        }
-        .btn-outline:hover { background: #f5f5f5; color: var(--text); }
-
+        .btn-outline { background: transparent; color: var(--text-2); border: 1.5px solid var(--border); }
+        .btn-outline:hover { background: var(--bg); color: var(--text); }
         .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; align-items: center; }
+        .hint { font-size: 0.78rem; color: var(--text-3); margin-top: 0.3rem; }
 
-        .hint { font-size: 0.78rem; color: var(--text-placeholder); margin-top: 0.3rem; }
-
-        /* MODAL */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,.45); z-index: 1000;
-            align-items: center; justify-content: center;
-            padding: 1rem;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal {
-            background: var(--surface); border-radius: 14px;
-            width: 100%; max-width: 540px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.25);
-            overflow: hidden;
-        }
-        .modal-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 1.1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .modal-title { font-weight: 700; font-size: 1rem; }
-        .modal-close {
-            background: none; border: none; cursor: pointer;
-            color: var(--text-muted); font-size: 1.1rem;
-            padding: .2rem .4rem; border-radius: 4px;
-        }
-        .modal-close:hover { background: #f5f5f5; color: var(--text); }
-        .modal-body { padding: 1.25rem 1.5rem; max-height: 60vh; overflow-y: auto; }
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border);
-            display: flex; gap: .75rem;
-        }
-        .modal-alert {
-            background: var(--error-bg); border: 1px solid var(--error-border);
-            color: var(--error-text); padding: .6rem .9rem;
-            border-radius: var(--radius-sm); font-size: .82rem;
-            margin-bottom: 1rem;
-        }
-        /* BOTÃO + NOVO */
+        /* ── BOTÃO + NOVO ── */
         .btn-novo {
-            font-size: .78rem; font-weight: 600; color: var(--accent);
+            font-size: .78rem; font-weight: 600; color: var(--orange);
             background: none; border: 1.5px solid var(--border);
             border-radius: 6px; padding: .25rem .7rem;
             cursor: pointer; transition: all .15s; white-space: nowrap;
         }
-        .btn-novo:hover { background: #f5f5f5; border-color: #aaa; }
+        .btn-novo:hover { background: var(--orange-light); border-color: #FDBA74; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.45); z-index: 1000;
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface); border-radius: var(--radius);
+            width: 100%; max-width: 540px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden;
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .modal-title { font-weight: 700; font-size: 1rem; }
+        .modal-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-3); font-size: 1.1rem; padding: .2rem .4rem; border-radius: 4px;
+        }
+        .modal-close:hover { background: var(--bg); color: var(--text); }
+        .modal-body { padding: 1.25rem 1.5rem; max-height: 60vh; overflow-y: auto; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: .75rem; }
+        .modal-alert {
+            background: var(--error-bg); border: 1px solid var(--error-border);
+            color: var(--error-text); padding: .6rem .9rem;
+            border-radius: var(--radius-sm); font-size: .82rem; margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 1.5rem 1rem; }
+        }
     </style>
 </head>
 <body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🏷</div>
+        <div>
+            <div class="logo-text">Muttley</div>
+            <div class="logo-sub">Painel Administrativo</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" th:href="@{/admin/dashboard}">
+            <span class="nav-icon">📅</span> Eventos
+        </a>
+        <a class="nav-item active" th:href="@{/eventos/cadastrar}">
+            <span class="nav-icon">➕</span> Novo Evento
+        </a>
+        <div class="nav-section-label" style="margin-top:.75rem;">Gestão</div>
+        <a class="nav-item" th:href="@{/tag}">
+            <span class="nav-icon">🏅</span> Gerenciar Tags
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
 <div class="container">
 
-    <!-- HEADER -->
     <div class="header">
         <div class="header-icon">📅</div>
         <div>
@@ -220,7 +244,7 @@
             <p>Preencha os dados para criar um novo evento no sistema</p>
         </div>
     </div>
-    <!-- FEEDBACK DO SERVIDOR -->
+
     <div th:if="${mensagem}" class="alert"
          th:classappend="${mensagem.startsWith('Erro') or mensagem.startsWith('erro') ? 'alert-error' : 'alert-success'}"
          th:text="${mensagem}">
@@ -228,7 +252,6 @@
 
     <form th:action="@{/eventos/cadastrar}" method="POST">
 
-        <!-- INFORMAÇÕES BÁSICAS -->
         <div class="card">
             <div class="card-title">Informações Básicas</div>
             <div class="card-subtitle">Dados principais do evento</div>
@@ -274,7 +297,6 @@
             </div>
         </div>
 
-        <!-- DATA E LOCAL -->
         <div class="card">
             <div class="card-title">Data, Hora e Local</div>
             <div class="card-subtitle">Quando e onde o evento acontece</div>
@@ -311,7 +333,6 @@
             </div>
         </div>
 
-        <!-- CONFIGURAÇÕES -->
         <div class="card">
             <div class="card-title">Configurações Adicionais</div>
             <div class="card-subtitle">Vagas, pontuação e vínculo acadêmico</div>
@@ -319,14 +340,12 @@
             <div class="form-row">
                 <div class="field">
                     <label class="field-label" for="vagasMaximas">Vagas Máximas</label>
-                    <input class="input" type="number" id="vagasMaximas" name="vagasMaximas"
-                           value="0" min="0" />
+                    <input class="input" type="number" id="vagasMaximas" name="vagasMaximas" value="0" min="0" />
                     <p class="hint">0 = ilimitado</p>
                 </div>
                 <div class="field">
                     <label class="field-label" for="pontosParticipacao">Pontos de Participação</label>
-                    <input class="input" type="number" id="pontosParticipacao" name="pontosParticipacao"
-                           value="1" min="0" required />
+                    <input class="input" type="number" id="pontosParticipacao" name="pontosParticipacao" value="1" min="0" required />
                 </div>
             </div>
 
@@ -335,19 +354,17 @@
                     <label class="field-label" for="semestreReferencia">
                         Semestre <span class="optional">(opcional)</span>
                     </label>
-                    <input class="input" type="text" id="semestreReferencia" name="semestreReferencia"
-                           placeholder="Ex: 2026.1" maxlength="10" />
+                    <input class="input" type="text" id="semestreReferencia" name="semestreReferencia" placeholder="Ex: 2026.1" maxlength="10" />
                 </div>
                 <div class="field">
                     <label class="field-label" for="disciplinaRelacionada">
                         Disciplina <span class="optional">(opcional)</span>
                     </label>
-                    <input class="input" type="text" id="disciplinaRelacionada" name="disciplinaRelacionada"
-                           placeholder="Ex: Engenharia de Software" maxlength="150" />
+                    <input class="input" type="text" id="disciplinaRelacionada" name="disciplinaRelacionada" placeholder="Ex: Engenharia de Software" maxlength="150" />
                 </div>
             </div>
 
-            <div class="field" style="margin-top: 0.25rem;">
+            <div class="field" style="margin-top:0.25rem;">
                 <div class="toggle-group">
                     <label class="toggle-item">
                         <input type="checkbox" name="eForum" value="true" />
@@ -361,7 +378,6 @@
             </div>
         </div>
 
-        <!-- ASSOCIAÇÕES -->
         <div class="card">
             <div class="card-title">Tags, Palestrantes e Patrocinadores</div>
             <div class="card-subtitle">Associações opcionais — ou cadastre novos diretamente aqui</div>
@@ -486,7 +502,6 @@
             </div>
         </div>
 
-        <!-- AÇÕES -->
         <div class="actions">
             <button class="btn btn-primary" type="submit">✓ Cadastrar Evento</button>
             <a th:href="@{/admin/dashboard}" class="btn btn-outline">Cancelar</a>
@@ -494,130 +509,75 @@
 
     </form>
 </div>
+</main>
 
 <script>
-    // ── Modais ────────────────────────────────────────────────────────────────
-    function abrirModal(id) {
-        document.getElementById(id).classList.add('open');
-    }
-    function fecharModal(id) {
-        document.getElementById(id).classList.remove('open');
-    }
-    // Fecha modal ao clicar no overlay
+    function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
     document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) fecharModal(overlay.id);
-        });
+        overlay.addEventListener('click', function(e) { if (e.target === overlay) fecharModal(overlay.id); });
     });
 
-    // ── Adiciona item ao multiselect dinamicamente ────────────────────────────
     function adicionarAoMultiselect(boxId, emptyId, id, label, name) {
         var box = document.getElementById(boxId);
         var empty = document.getElementById(emptyId);
-        if (empty) { empty.remove(); }
+        if (empty) empty.remove();
         var lbl = document.createElement('label');
         var cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.name = name;
-        cb.value = id;
-        cb.checked = true; // já marca o recém-criado
-        lbl.appendChild(cb);
-        lbl.appendChild(document.createTextNode(' ' + label));
+        cb.type = 'checkbox'; cb.name = name; cb.value = id; cb.checked = true;
+        lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + label));
         box.appendChild(lbl);
     }
 
-    // ── Salvar palestrante inline ─────────────────────────────────────────────
     async function salvarPalestrante() {
         var nome = document.getElementById('pal_nome').value.trim();
         var erroDiv = document.getElementById('modalPalestranteErro');
         erroDiv.style.display = 'none';
-
-        if (!nome) {
-            erroDiv.textContent = 'Nome é obrigatório.';
-            erroDiv.style.display = 'block';
-            return;
-        }
-
+        if (!nome) { erroDiv.textContent = 'Nome é obrigatório.'; erroDiv.style.display = 'block'; return; }
         var params = new URLSearchParams({
-            nome: nome,
-            titulo: document.getElementById('pal_titulo').value.trim(),
+            nome: nome, titulo: document.getElementById('pal_titulo').value.trim(),
             email: document.getElementById('pal_email').value.trim(),
             bio: document.getElementById('pal_bio').value.trim(),
             linkedinUrl: document.getElementById('pal_linkedin').value.trim(),
             githubUrl: document.getElementById('pal_github').value.trim()
         });
-
         try {
             var resp = await fetch('/api/palestrantes/criar', { method: 'POST', body: params });
             var data = await resp.json();
-            if (!resp.ok || data.erro) {
-                erroDiv.textContent = data.erro || 'Erro ao salvar.';
-                erroDiv.style.display = 'block';
-                return;
-            }
-            var label = data.nome + (data.titulo ? ' · ' + data.titulo : '');
-            adicionarAoMultiselect('palestrantesBox', 'palestrantesEmpty', data.id, label, 'palestranteIds');
-            // Limpa campos
-            ['pal_nome','pal_titulo','pal_email','pal_bio','pal_linkedin','pal_github'].forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) el.value = '';
-            });
+            if (!resp.ok || data.erro) { erroDiv.textContent = data.erro || 'Erro ao salvar.'; erroDiv.style.display = 'block'; return; }
+            adicionarAoMultiselect('palestrantesBox', 'palestrantesEmpty', data.id, data.nome + (data.titulo ? ' · ' + data.titulo : ''), 'palestranteIds');
+            ['pal_nome','pal_titulo','pal_email','pal_bio','pal_linkedin','pal_github'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
             fecharModal('modalPalestrante');
-        } catch (e) {
-            erroDiv.textContent = 'Erro de conexão: ' + e.message;
-            erroDiv.style.display = 'block';
-        }
+        } catch (e) { erroDiv.textContent = 'Erro de conexão: ' + e.message; erroDiv.style.display = 'block'; }
     }
 
-    // ── Salvar patrocinador inline ────────────────────────────────────────────
     async function salvarPatrocinador() {
         var nome = document.getElementById('pat_nome').value.trim();
         var erroDiv = document.getElementById('modalPatrocinadorErro');
         erroDiv.style.display = 'none';
-
-        if (!nome) {
-            erroDiv.textContent = 'Nome é obrigatório.';
-            erroDiv.style.display = 'block';
-            return;
-        }
-
+        if (!nome) { erroDiv.textContent = 'Nome é obrigatório.'; erroDiv.style.display = 'block'; return; }
         var params = new URLSearchParams({
-            nome: nome,
-            nivelPatrocinio: document.getElementById('pat_nivel').value,
+            nome: nome, nivelPatrocinio: document.getElementById('pat_nivel').value,
             email: document.getElementById('pat_email').value.trim(),
             site: document.getElementById('pat_site').value.trim(),
             logoUrl: document.getElementById('pat_logo').value.trim()
         });
-
         try {
             var resp = await fetch('/api/patrocinadores/criar', { method: 'POST', body: params });
             var data = await resp.json();
-            if (!resp.ok || data.erro) {
-                erroDiv.textContent = data.erro || 'Erro ao salvar.';
-                erroDiv.style.display = 'block';
-                return;
-            }
-            var label = data.nome + (data.nivelPatrocinio ? ' [' + data.nivelPatrocinio + ']' : '');
-            adicionarAoMultiselect('patrocinadoresBox', 'patrocinadoresEmpty', data.id, label, 'patrocinadorIds');
-            ['pat_nome','pat_email','pat_site','pat_logo'].forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) el.value = '';
-            });
+            if (!resp.ok || data.erro) { erroDiv.textContent = data.erro || 'Erro ao salvar.'; erroDiv.style.display = 'block'; return; }
+            adicionarAoMultiselect('patrocinadoresBox', 'patrocinadoresEmpty', data.id, data.nome + (data.nivelPatrocinio ? ' [' + data.nivelPatrocinio + ']' : ''), 'patrocinadorIds');
+            ['pat_nome','pat_email','pat_site','pat_logo'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
             document.getElementById('pat_nivel').value = '';
             fecharModal('modalPatrocinador');
-        } catch (e) {
-            erroDiv.textContent = 'Erro de conexão: ' + e.message;
-            erroDiv.style.display = 'block';
-        }
+        } catch (e) { erroDiv.textContent = 'Erro de conexão: ' + e.message; erroDiv.style.display = 'block'; }
     }
 
-    // ── Dropdowns ─────────────────────────────────────────────────────────────
     async function carregarDropdowns() {
         try {
             const resp = await fetch('/api/eventos/dropdowns');
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             const data = await resp.json();
-
             popularMultiselect('tagsBox', 'tagsEmpty', data.tags || [], function(t) {
                 return { id: t.id, label: t.nome + (t.areaConhecimento ? ' — ' + t.areaConhecimento : ''), name: 'tagIds' };
             });
@@ -628,9 +588,8 @@
                 return { id: p.id, label: p.nome + (p.nivelPatrocinio ? ' [' + p.nivelPatrocinio + ']' : ''), name: 'patrocinadorIds' };
             });
         } catch (e) {
-            ['tagsEmpty', 'palestrantesEmpty', 'patrocinadoresEmpty'].forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) el.textContent = 'Não foi possível carregar — verifique se o servidor está rodando.';
+            ['tagsEmpty','palestrantesEmpty','patrocinadoresEmpty'].forEach(function(id) {
+                var el = document.getElementById(id); if (el) el.textContent = 'Não foi possível carregar.';
             });
         }
     }
@@ -639,20 +598,14 @@
         var box = document.getElementById(boxId);
         var empty = document.getElementById(emptyId);
         if (!box) return;
-        if (!items.length) {
-            if (empty) empty.textContent = 'Nenhum item cadastrado ainda.';
-            return;
-        }
+        if (!items.length) { if (empty) empty.textContent = 'Nenhum item cadastrado ainda.'; return; }
         if (empty) empty.remove();
         items.forEach(function(item) {
             var mapped = mapper(item);
             var lbl = document.createElement('label');
             var cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.name = mapped.name;
-            cb.value = mapped.id;
-            lbl.appendChild(cb);
-            lbl.appendChild(document.createTextNode(' ' + mapped.label));
+            cb.type = 'checkbox'; cb.name = mapped.name; cb.value = mapped.id;
+            lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + mapped.label));
             box.appendChild(lbl);
         });
     }
