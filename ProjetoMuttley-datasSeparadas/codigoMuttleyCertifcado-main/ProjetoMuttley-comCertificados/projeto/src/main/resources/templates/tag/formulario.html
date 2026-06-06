@@ -4,211 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Tags</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #f5f5f5;
-            --surface: #ffffff;
-            --border: #e0e0e0;
-            --border-light: #eeeeee;
-            --text: #1a1a1a;
-            --text-muted: #6b6b6b;
-            --text-placeholder: #aaaaaa;
-            --accent: #3a3a3a;
-            --accent-hover: #111;
-            --success-bg: #f0fdf4;
-            --success-border: #bbf7d0;
+            --orange:       #F97316;
+            --orange-light: #FFF7ED;
+            --orange-dark:  #EA580C;
+            --bg:           #F8FAFC;
+            --surface:      #FFFFFF;
+            --border:       #E2E8F0;
+            --text:         #0F172A;
+            --text-2:       #475569;
+            --text-3:       #94A3B8;
+            --success-bg:   #F0FDF4;
+            --success-border:#BBF7D0;
             --success-text: #166534;
-            --error-bg: #fef2f2;
-            --error-border: #fecaca;
-            --error-text: #991b1b;
-            --radius-sm: 7px;
+            --error-bg:     #FEF2F2;
+            --error-border: #FECACA;
+            --error-text:   #991B1B;
+            --radius:       16px;
+            --radius-sm:    10px;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 2.5rem 1.5rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg); color: var(--text); min-height: 100vh;
         }
 
+        /* ── SIDEBAR ── */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+            background: var(--surface); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 1.5rem 1.25rem 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-icon {
+            width: 36px; height: 36px; background: var(--orange); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .logo-text { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .logo-sub  { font-size: 0.7rem; color: var(--text-3); font-weight: 500; }
+        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
+        .nav-section-label {
+            font-size: 0.65rem; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.08em; padding: 0.5rem 0.6rem 0.25rem;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;
+            color: var(--text-2); text-decoration: none; transition: background 0.15s, color 0.15s;
+        }
+        .nav-item:hover { background: var(--bg); color: var(--text); }
+        .nav-item.active { background: var(--orange-light); color: var(--orange-dark); font-weight: 600; }
+        .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+        /* ── MAIN ── */
+        .main { margin-left: 240px; min-height: 100vh; padding: 2.5rem 2rem; }
         .container { max-width: 740px; margin: 0 auto; }
 
-        /* HEADER */
+        /* ── HEADER ── */
         .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-
         .header-icon {
-            width: 46px; height: 46px;
-            background: #f0f0f0;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
+            width: 46px; height: 46px; background: var(--orange-light); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+            border: 1px solid #FDBA74; flex-shrink: 0;
         }
+        .header h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1.2; letter-spacing: -0.02em; }
+        .header p  { color: var(--text-3); font-size: 0.85rem; margin-top: 2px; font-weight: 500; }
 
-        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.2; }
-        .header p  { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
-
-        /* ALERTS */
+        /* ── ALERTS ── */
         .alert {
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 1.2rem;
-            font-size: 0.875rem;
-            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.2rem;
+            font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;
         }
-
         .alert-success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
         .alert-error   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error-text); }
 
-        /* CARD */
+        /* ── CARD ── */
         .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 1.5rem;
-            margin-bottom: 1.2rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.2rem;
         }
+        .card-title    { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+        .card-subtitle { color: var(--text-3); font-size: 0.82rem; margin-bottom: 1.2rem; font-weight: 500; }
 
-        .card-title    { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
-        .card-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; }
+        .field-label { font-size: 0.82rem; font-weight: 600; color: var(--text-2); margin-bottom: 0.4rem; display: block; }
 
-        .field-label {
-            font-size: 0.82rem; font-weight: 500; color: #444;
-            margin-bottom: 0.4rem; display: block;
-        }
-
-        /* FORM */
+        /* ── FORM ── */
         .form-row { display: flex; gap: 0.6rem; }
-
         .input {
-            flex: 1;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0.65rem 0.9rem;
-            color: var(--text);
-            font-family: inherit; font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            flex: 1; background: var(--surface); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.65rem 0.9rem;
+            color: var(--text); font-family: inherit; font-size: 0.875rem;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
         }
-
-        .input:focus { border-color: #888; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-        .input::placeholder { color: var(--text-placeholder); }
+        .input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,.12); }
+        .input::placeholder { color: var(--text-3); }
 
         .btn {
-            padding: 0.65rem 1.2rem;
-            border-radius: var(--radius-sm);
-            border: none;
-            font-family: inherit; font-size: 0.875rem; font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            white-space: nowrap;
+            padding: 0.65rem 1.2rem; border-radius: var(--radius-sm); border: none;
+            font-family: inherit; font-size: 0.875rem; font-weight: 700;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
         }
-
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary { background: var(--orange); color: white; box-shadow: 0 2px 8px rgba(249,115,22,.3); }
+        .btn-primary:hover { background: var(--orange-dark); }
         .btn-primary:active { transform: scale(0.98); }
 
         .btn-danger {
             background: var(--error-bg); color: var(--error-text);
-            border: 1px solid var(--error-border);
-            padding: 0.35rem 0.7rem; font-size: 0.78rem; border-radius: 6px;
+            border: 1px solid var(--error-border); padding: 0.35rem 0.7rem;
+            font-size: 0.78rem; border-radius: 6px;
         }
-
-        .btn-danger:hover { background: #fee2e2; }
+        .btn-danger:hover { background: #FEE2E2; }
 
         .btn-save {
             background: var(--success-bg); color: var(--success-text);
-            border: 1px solid var(--success-border);
-            padding: 0.35rem 0.7rem; font-size: 0.78rem; border-radius: 6px;
+            border: 1px solid var(--success-border); padding: 0.35rem 0.7rem;
+            font-size: 0.78rem; border-radius: 6px;
         }
+        .btn-save:hover { background: #DCFCE7; }
 
-        .btn-save:hover { background: #dcfce7; }
-
-        /* SEARCH */
+        /* ── SEARCH ── */
         .search-wrapper { position: relative; margin-bottom: 1rem; }
-
         .search-icon {
-            position: absolute; left: 0.75rem; top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-placeholder); font-size: 0.9rem; pointer-events: none;
+            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+            color: var(--text-3); font-size: 0.9rem; pointer-events: none;
         }
+        .search-input { width: 100%; padding-left: 2.2rem; background: #fafafa; }
 
-        .search-input { width: 100%; padding-left: 2.2rem; background: #f9f9f9; border-color: var(--border-light); }
+        /* ── COUNT ── */
+        .count-text { color: var(--text-3); font-size: 0.82rem; margin-bottom: 1rem; font-weight: 500; }
 
-        /* COUNT */
-        .count-text { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1rem; }
-
-        /* TAG CHIPS */
+        /* ── TAG CHIPS ── */
         .tags-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 48px; }
-
         .tag-chip {
             display: inline-flex; align-items: center; gap: 0.35rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.82rem; font-weight: 500;
-            border: 1px solid var(--border);
+            padding: 0.35rem 0.75rem; border-radius: 999px;
+            font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border);
             transition: opacity 0.15s;
         }
-
-        .tag-chip:nth-child(7n+1) { background: #f5f5f5; border-color: #ddd; color: #444; }
-        .tag-chip:nth-child(7n+2) { background: #f0f7ff; border-color: #c8dff7; color: #1e4070; }
-        .tag-chip:nth-child(7n+3) { background: #f5f0ff; border-color: #d4c8f5; color: #4a2080; }
-        .tag-chip:nth-child(7n+4) { background: #f0fff5; border-color: #b8e8c8; color: #1a6040; }
-        .tag-chip:nth-child(7n+5) { background: #fff8f0; border-color: #e8d0b8; color: #704020; }
-        .tag-chip:nth-child(7n+6) { background: #f0f8ff; border-color: #b8d8f0; color: #1a4060; }
-        .tag-chip:nth-child(7n+7) { background: #fafaf0; border-color: #dcdcb0; color: #505020; }
-
+        .tag-chip:nth-child(7n+1) { background: #F1F5F9; border-color: #CBD5E1; color: #475569; }
+        .tag-chip:nth-child(7n+2) { background: #EFF6FF; border-color: #BFDBFE; color: #1E40AF; }
+        .tag-chip:nth-child(7n+3) { background: #F5F3FF; border-color: #DDD6FE; color: #5B21B6; }
+        .tag-chip:nth-child(7n+4) { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+        .tag-chip:nth-child(7n+5) { background: #FFF7ED; border-color: #FED7AA; color: #9A3412; }
+        .tag-chip:nth-child(7n+6) { background: #EFF6FF; border-color: #BAE6FD; color: #0C4A6E; }
+        .tag-chip:nth-child(7n+7) { background: #FEFCE8; border-color: #FDE68A; color: #78350F; }
         .tag-chip .remove-btn {
-            background: none; border: none; cursor: pointer;
-            color: inherit; opacity: 0.45; font-size: 1rem; line-height: 1;
-            padding: 0; transition: opacity 0.15s;
-            display: flex; align-items: center;
+            background: none; border: none; cursor: pointer; color: inherit;
+            opacity: 0.45; font-size: 1rem; line-height: 1; padding: 0;
+            transition: opacity 0.15s; display: flex; align-items: center;
         }
-
         .tag-chip .remove-btn:hover { opacity: 1; }
+        .empty-state { color: var(--text-3); font-size: 0.85rem; padding: 1rem 0; }
 
-        .empty-state { color: var(--text-placeholder); font-size: 0.85rem; padding: 1rem 0; }
-
-        /* TABLE */
+        /* ── TABLE ── */
         .table-wrapper { overflow-x: auto; }
-
         table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-
         thead th {
-            font-size: 0.72rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.06em;
-            color: var(--text-muted);
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--text-3);
             padding: 0.6rem 0.75rem; text-align: left;
-            border-bottom: 1px solid var(--border-light);
-            background: #fafafa;
+            border-bottom: 1px solid var(--border); background: #FAFAFA;
         }
-
-        thead th:first-child { border-radius: 8px 0 0 0; }
-        thead th:last-child  { border-radius: 0 8px 0 0; }
-
-        tbody tr { border-bottom: 1px solid var(--border-light); transition: background 0.1s; }
-        tbody tr:hover { background: #fafafa; }
-        tbody td { padding: 0.65rem 0.75rem; color: #444; vertical-align: middle; }
-
-        .id-cell { color: var(--text-placeholder); font-size: 0.8rem; width: 48px; }
-
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        tbody tr:hover { background: #FAFAFA; }
+        tbody td { padding: 0.65rem 0.75rem; color: var(--text-2); vertical-align: middle; }
+        .id-cell { color: var(--text-3); font-size: 0.8rem; width: 48px; }
         .edit-form { display: flex; gap: 0.4rem; align-items: center; }
-
         .input-sm { padding: 0.35rem 0.6rem; font-size: 0.82rem; border-radius: 6px; flex: 1; }
-
         .actions-cell { display: flex; gap: 0.4rem; align-items: center; width: 100px; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 1.5rem 1rem; }
+        }
     </style>
 </head>
 <body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🏷</div>
+        <div>
+            <div class="logo-text">Muttley</div>
+            <div class="logo-sub">Painel Administrativo</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item" th:href="@{/admin/dashboard}">
+            <span class="nav-icon">📅</span> Eventos
+        </a>
+        <a class="nav-item" th:href="@{/eventos/cadastrar}">
+            <span class="nav-icon">➕</span> Novo Evento
+        </a>
+        <div class="nav-section-label" style="margin-top:.75rem;">Gestão</div>
+        <a class="nav-item active" th:href="@{/tag}">
+            <span class="nav-icon">🏅</span> Gerenciar Tags
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
 <div class="container">
 
-    <!-- HEADER -->
     <div class="header">
         <div class="header-icon">🏷️</div>
         <div>
@@ -216,9 +225,7 @@
             <p>Gerencie as tags de competências dos eventos</p>
         </div>
     </div>
-    <div><a th:href="@{/admin/dashboard}" class="btn btn-outline">Voltar</a></div>
 
-    <!-- ALERTAS THYMELEAF -->
     <div class="alert alert-success" th:if="${sucesso}">
         <span>✓</span> <span th:text="${sucesso}"></span>
     </div>
@@ -226,11 +233,9 @@
         <span>✕</span> <span th:text="${erro}"></span>
     </div>
 
-    <!-- CARD: Nova Tag -->
     <div class="card">
         <div class="card-title">Nova Tag</div>
         <div class="card-subtitle">Digite o nome da competência ou área de conhecimento</div>
-
         <form th:action="@{/tag/salvar}" method="post">
             <label class="field-label">Nome da Tag</label>
             <div class="form-row">
@@ -241,36 +246,30 @@
         </form>
     </div>
 
-    <!-- CARD: Chips de Tags Cadastradas -->
     <div class="card">
         <div class="card-title">Tags Cadastradas</div>
         <div class="count-text" th:text="${#lists.size(tag)} + ' tag(s) no total'">0 tag(s) no total</div>
-
         <div class="search-wrapper">
             <span class="search-icon">🔍</span>
             <input class="input search-input" type="text" id="searchInput"
                    placeholder="Buscar tag..." oninput="filtrarTags(this.value)" autocomplete="off" />
         </div>
-
         <div class="tags-grid" id="tagsGrid">
             <span class="empty-state" th:if="${#lists.isEmpty(tag)}">
                 Nenhuma tag cadastrada ainda.
             </span>
-
             <span class="tag-chip" th:each="t : ${tag}" th:attr="data-nome=${t.nome}">
                 <span th:text="${t.nome}">Tag</span>
-                <form th:action="@{/tag/excluir/{id}(id=${t.id})}" method="post" style="display:inline; margin:0;">
+                <form th:action="@{/tag/excluir/{id}(id=${t.id})}" method="post" style="display:inline;margin:0;">
                     <button type="submit" class="remove-btn" title="Remover">×</button>
                 </form>
             </span>
         </div>
     </div>
 
-    <!-- CARD: Tabela com edição -->
     <div class="card">
         <div class="card-title">Todas as Tags</div>
         <div class="card-subtitle">Visualize e edite as tags cadastradas</div>
-
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -282,18 +281,15 @@
                 </thead>
                 <tbody>
                     <tr th:if="${#lists.isEmpty(tag)}">
-                        <td colspan="3" style="text-align:center; color:#aaa; padding:2rem;">
+                        <td colspan="3" style="text-align:center;color:var(--text-3);padding:2rem;">
                             Nenhuma tag encontrada.
                         </td>
                     </tr>
                     <tr th:each="t : ${tag}">
                         <td class="id-cell" th:text="${t.id}">1</td>
                         <td>
-                            <form class="edit-form"
-                                  th:action="@{/tag/editar/{id}(id=${t.id})}"
-                                  method="post">
-                                <input class="input input-sm" type="text" name="nome"
-                                       th:value="${t.nome}" required />
+                            <form class="edit-form" th:action="@{/tag/editar/{id}(id=${t.id})}" method="post">
+                                <input class="input input-sm" type="text" name="nome" th:value="${t.nome}" required />
                                 <button class="btn btn-save" type="submit">Salvar</button>
                             </form>
                         </td>
@@ -311,15 +307,16 @@
     </div>
 
 </div>
+</main>
 
 <script>
     function filtrarTags(termo) {
-        const chips = document.querySelectorAll('#tagsGrid .tag-chip');
-        chips.forEach(chip => {
-            const nome = chip.getAttribute('data-nome').toLowerCase();
+        document.querySelectorAll('#tagsGrid .tag-chip').forEach(function(chip) {
+            var nome = chip.getAttribute('data-nome').toLowerCase();
             chip.style.display = nome.includes(termo.toLowerCase()) ? 'inline-flex' : 'none';
         });
     }
 </script>
 </body>
 </html>
+
