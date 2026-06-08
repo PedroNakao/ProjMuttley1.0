@@ -276,6 +276,13 @@
         }
         .btn-qr:hover { background: var(--text); color: white; border-color: var(--text); }
 
+        .btn-edit {
+            background: var(--blue-light);
+            color: var(--blue);
+            border: 1.5px solid #BFDBFE;
+        }
+        .btn-edit:hover { background: #DBEAFE; }
+
         /* ── PARTICIPANTES CONTAGEM ─────────────────── */
         .participants-bar {
             display: flex; align-items: center; gap: 0.5rem;
@@ -356,7 +363,7 @@
             .sidebar { display: none; }
             .main { margin-left: 0; }
             .content { padding: 1rem; }
-            .stats-row { grid-template-columns: repeat(2,1fr); }
+            .stats-row { grid-template-columns: repeat(2,1fr);}
         }
     </style>
 </head>
@@ -588,7 +595,8 @@
             </div>
             <div class="event-card-footer">
                 <a class="btn-action btn-inscricao" href="${urlInscricao}">Inscrição →</a>
-                <button class="btn-action btn-qr" onclick="abrirQr(${e.id}, '${esc(e.titulo).replace(/'/g,"\\'")}')">🔳 QR Code</button>
+                <button class="btn-action btn-qr" onclick="abrirQr(${e.id}, '${esc(e.titulo).replace(/'/g,"\'")}')">🔳 QR Code</button>
+                <a class="btn-action btn-edit" href="/eventos/editar/${e.id}">✏️ Editar</a>
             </div>
         </div>`;
     }
