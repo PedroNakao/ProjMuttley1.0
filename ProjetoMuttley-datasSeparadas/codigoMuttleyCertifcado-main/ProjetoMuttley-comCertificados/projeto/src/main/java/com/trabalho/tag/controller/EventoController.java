@@ -3,16 +3,13 @@ package com.trabalho.tag.controller;
 import com.trabalho.tag.dto.DropdownsEventoDTO;
 import com.trabalho.tag.model.*;
 import com.trabalho.tag.repository.*;
-import com.trabalho.tag.service.EventoFinalizacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +30,6 @@ public class EventoController {
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
 
-    @Autowired
-    private EventoFinalizacaoService eventoFinalizacaoService;
-
     // ── Tela de cadastro ─────────────────────────────────────────────────────
 
     @GetMapping("/eventos/cadastrar")
@@ -51,10 +45,8 @@ public class EventoController {
             @RequestParam(value = "descricao", required = false) String descricao,
             @RequestParam("tipoEvento") TipoEvento tipoEvento,
             @RequestParam("modalidade") ModalidadeEvento modalidade,
-            @RequestParam("dataInicioData") String dataInicioData,
-            @RequestParam("dataInicioHora") String dataInicioHora,
-            @RequestParam("dataFimData") String dataFimData,
-            @RequestParam("dataFimHora") String dataFimHora,
+            @RequestParam("dataInicio") String dataInicio,
+            @RequestParam("dataFim") String dataFim,
             @RequestParam(value = "local", required = false) String local,
             @RequestParam(value = "vagasMaximas", defaultValue = "0") Integer vagasMaximas,
             @RequestParam(value = "pontosParticipacao", defaultValue = "1") Integer pontosParticipacao,
@@ -68,28 +60,13 @@ public class EventoController {
             Model model) {
 
         try {
-            // Combina data + hora separados em LocalDateTime
-            LocalDateTime dataInicio = LocalDateTime.of(
-                    LocalDate.parse(dataInicioData),
-                    LocalTime.parse(dataInicioHora)
-            );
-            LocalDateTime dataFim = LocalDateTime.of(
-                    LocalDate.parse(dataFimData),
-                    LocalTime.parse(dataFimHora)
-            );
-
-            if (!dataFim.isAfter(dataInicio)) {
-                model.addAttribute("mensagem", "Erro: a data/hora de fim deve ser posterior à de início.");
-                return "evento/cadastrar";
-            }
-
             Evento evento = new Evento();
             evento.setTitulo(titulo);
             evento.setDescricao(descricao);
             evento.setTipoEvento(tipoEvento);
             evento.setModalidade(modalidade);
-            evento.setDataInicio(dataInicio);
-            evento.setDataFim(dataFim);
+            evento.setDataInicio(LocalDateTime.parse(dataInicio));
+            evento.setDataFim(LocalDateTime.parse(dataFim));
             evento.setLocal(local);
             evento.setVagasMaximas(vagasMaximas != null ? vagasMaximas : 0);
             boolean concederMedalha = "true".equals(medalhaParam);
@@ -141,31 +118,6 @@ public class EventoController {
         }
 
         return "evento/cadastrar";
-    }
-
-    // ── API: finalizar evento e emitir certificados ───────────────────────────
-
-    /**
-     * Finaliza o evento e gera/envia certificados PDF para todos os inscritos.
-     * POST /api/eventos/{id}/finalizar
-     */
-    @PostMapping("/api/eventos/{id}/finalizar")
-    @ResponseBody
-    public ResponseEntity<?> finalizarEvento(@PathVariable Long id) {
-        try {
-            int qtd = eventoFinalizacaoService.finalizarEvento(id);
-            return ResponseEntity.ok(Map.of(
-                    "mensagem", "Evento finalizado com sucesso!",
-                    "certificadosGerados", qtd
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("erro", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("erro", "Erro ao finalizar evento: " + e.getMessage()));
-        }
     }
 
     // ── API: dropdowns para o frontend ────────────────────────────────────────
@@ -268,5 +220,141 @@ public class EventoController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("erro", e.getMessage()));
         }
+    }
+
+    // ── GET: tela de edição ───────────────────────────────────────────────────
+
+    @GetMapping("/eventos/editar/{id}")
+    public String paginaEditarEvento(@PathVariable Long id, Model model) {
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado: " + id));
+        model.addAttribute("evento", evento);
+
+        // IDs de tags, palestrantes e patrocinadores já vinculados
+        List<Long> tagIdsSelecionadas = evento.getListaTag() != null
+                ? evento.getListaTag().stream().map(Tag::getId).collect(Collectors.toList())
+                : List.of();
+        model.addAttribute("tagIdsSelecionadas", tagIdsSelecionadas);
+
+        return "evento/editar";
+    }
+
+    // ── POST: salva edição do evento ──────────────────────────────────────────
+
+    @PostMapping("/eventos/editar/{id}")
+    public String editarEvento(
+            @PathVariable Long id,
+            @RequestParam("titulo") String titulo,
+            @RequestParam(value = "descricao", required = false) String descricao,
+            @RequestParam("tipoEvento") TipoEvento tipoEvento,
+            @RequestParam("modalidade") ModalidadeEvento modalidade,
+            @RequestParam("dataInicioData") String dataInicioData,
+            @RequestParam("dataInicioHora") String dataInicioHora,
+            @RequestParam("dataFimData") String dataFimData,
+            @RequestParam("dataFimHora") String dataFimHora,
+            @RequestParam(value = "local", required = false) String local,
+            @RequestParam(value = "vagasMaximas", defaultValue = "0") Integer vagasMaximas,
+            @RequestParam(value = "pontosParticipacao", defaultValue = "1") Integer pontosParticipacao,
+            @RequestParam(value = "semestreReferencia", required = false) String semestreReferencia,
+            @RequestParam(value = "disciplinaRelacionada", required = false) String disciplinaRelacionada,
+            @RequestParam(value = "eForum", required = false) String eForumParam,
+            @RequestParam(value = "concedeMedalhaEspecial", required = false) String medalhaParam,
+            @RequestParam(value = "tagIds", required = false) List<Long> tagIds,
+            @RequestParam(value = "palestranteIds", required = false) List<Long> palestranteIds,
+            @RequestParam(value = "patrocinadorIds", required = false) List<Long> patrocinadorIds,
+            Model model) {
+
+        Evento evento = eventoRepository.findById(id).orElse(null);
+        if (evento == null) {
+            model.addAttribute("mensagem", "Erro: Evento não encontrado.");
+            return "evento/editar";
+        }
+
+        try {
+            LocalDateTime dataInicio = LocalDateTime.of(
+                    java.time.LocalDate.parse(dataInicioData),
+                    java.time.LocalTime.parse(dataInicioHora)
+            );
+            LocalDateTime dataFim = LocalDateTime.of(
+                    java.time.LocalDate.parse(dataFimData),
+                    java.time.LocalTime.parse(dataFimHora)
+            );
+
+            if (!dataFim.isAfter(dataInicio)) {
+                model.addAttribute("mensagem", "Erro: a data/hora de fim deve ser posterior à de início.");
+                model.addAttribute("evento", evento);
+                return "evento/editar";
+            }
+
+            evento.setTitulo(titulo);
+            evento.setDescricao(descricao);
+            evento.setTipoEvento(tipoEvento);
+            evento.setModalidade(modalidade);
+            evento.setDataInicio(dataInicio);
+            evento.setDataFim(dataFim);
+            evento.setLocal(local);
+            evento.setVagasMaximas(vagasMaximas != null ? vagasMaximas : 0);
+            evento.setPontosParticipacao(pontosParticipacao != null ? pontosParticipacao : 1);
+            evento.setSemestreReferencia(semestreReferencia);
+            evento.setDisciplinaRelacionada(disciplinaRelacionada);
+            evento.setEForum("true".equals(eForumParam));
+            evento.setConcedeMedalhaEspecial("true".equals(medalhaParam));
+
+            eventoRepository.save(evento);
+
+            // Re-associa tags: remove as antigas e adiciona as novas selecionadas
+            List<Tag> todasTags = tagRepository.findAll();
+            for (Tag t : todasTags) {
+                t.getListaTag().remove(evento);
+                tagRepository.save(t);
+            }
+            if (tagIds != null && !tagIds.isEmpty()) {
+                List<Tag> tags = tagRepository.findAllById(tagIds);
+                for (Tag t : tags) {
+                    t.getListaTag().add(evento);
+                    tagRepository.save(t);
+                }
+            }
+
+            // Re-associa palestrantes
+            List<Palestrante> todosPalestrantes = palestranteRepository.findAll();
+            for (Palestrante p : todosPalestrantes) {
+                p.getListaEvento().remove(evento);
+                palestranteRepository.save(p);
+            }
+            if (palestranteIds != null && !palestranteIds.isEmpty()) {
+                List<Palestrante> palestrantes = palestranteRepository.findAllById(palestranteIds);
+                for (Palestrante p : palestrantes) {
+                    p.getListaEvento().add(evento);
+                    palestranteRepository.save(p);
+                }
+            }
+
+            // Re-associa patrocinadores
+            List<Patrocinador> todosPatrocinadores = patrocinadorRepository.findAll();
+            for (Patrocinador p : todosPatrocinadores) {
+                p.getEventos().remove(evento);
+                patrocinadorRepository.save(p);
+            }
+            if (patrocinadorIds != null && !patrocinadorIds.isEmpty()) {
+                List<Patrocinador> patrocinadores = patrocinadorRepository.findAllById(patrocinadorIds);
+                for (Patrocinador p : patrocinadores) {
+                    p.getEventos().add(evento);
+                    patrocinadorRepository.save(p);
+                }
+            }
+
+            model.addAttribute("mensagem", "✅ Evento \"" + titulo + "\" atualizado com sucesso!");
+
+        } catch (Exception e) {
+            model.addAttribute("mensagem", "Erro ao atualizar evento: " + e.getMessage());
+        }
+
+        model.addAttribute("evento", evento);
+        List<Long> tagIdsSelecionadas = evento.getListaTag() != null
+                ? evento.getListaTag().stream().map(Tag::getId).collect(Collectors.toList())
+                : List.of();
+        model.addAttribute("tagIdsSelecionadas", tagIdsSelecionadas);
+        return "evento/editar";
     }
 }
