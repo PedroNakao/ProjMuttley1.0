@@ -141,11 +141,12 @@ public class InscricaoController {
     }
 
     private void salvarInscricaoCompleta(Evento evento, Participante participante, EventoParticipanteId idComposto) {
-        // 1. Salva o vínculo da inscrição primeiro
+        // 1. Salva o vínculo da inscrição primeiro (inscrito=false até confirmar presença pelo QR)
         EventoParticipante inscricao = new EventoParticipante();
         inscricao.setId(idComposto);
         inscricao.setEvento(evento);
         inscricao.setParticipante(participante);
+        inscricao.setInscrito(false); // Presença ainda não confirmada — será true via QR de presença
         inscricao = eventoParticipanteRepository.save(inscricao);
 
         // 2. Formata a data do evento para ficar bonita no texto (Ex: 12/03/2026)
