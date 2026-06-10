@@ -102,16 +102,57 @@
             transition: all 0.15s;
         }
         .topbar-back:hover { color: var(--text); border-color: var(--text-3); }
-        .topbar-sep { color: var(--border); }
-        .topbar-crumb { font-size: 0.82rem; color: var(--text-3); font-weight: 500; }
+        .topbar-sep    { color: var(--border); }
+        .topbar-crumb  { font-size: 0.82rem; color: var(--text-3); font-weight: 500; }
         .topbar-crumb strong { color: var(--text-2); font-weight: 600; }
 
         /* == CONTENT == */
         .content { padding: 2rem; }
 
-        .page-header { margin-bottom: 1.75rem; }
+        .page-header { margin-bottom: 1.5rem; }
         .page-title  { font-size: 1.5rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
         .page-sub    { font-size: 0.85rem; color: var(--text-3); margin-top: 0.25rem; font-weight: 500; }
+
+        /* == BUSCA == */
+        .search-bar {
+            display: flex; gap: 0.75rem; align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .search-wrap {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            flex: 1; min-width: 180px; max-width: 320px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .search-wrap:focus-within {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(249,115,22,.12);
+        }
+        .search-icon { color: var(--text-3); font-size: 0.85rem; flex-shrink: 0; }
+        .search-input {
+            flex: 1; border: none; outline: none;
+            font-family: inherit; font-size: 0.875rem; color: var(--text);
+            background: transparent;
+        }
+        .search-input::placeholder { color: var(--text-3); }
+        .search-count {
+            margin-left: auto;
+            font-size: 0.8rem; color: var(--text-3); font-weight: 600;
+            white-space: nowrap;
+        }
+        .btn-limpar {
+            font-size: 0.78rem; font-weight: 600; color: var(--text-3);
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 999px; padding: 0.45rem 0.9rem;
+            cursor: pointer; transition: all 0.15s; white-space: nowrap;
+            display: none; /* aparece só quando há busca ativa */
+        }
+        .btn-limpar.visible { display: inline-flex; align-items: center; gap: 0.3rem; }
+        .btn-limpar:hover { background: var(--bg); color: var(--text); border-color: var(--text-3); }
 
         /* == TABLE CARD == */
         .table-card {
@@ -122,9 +163,7 @@
             overflow: hidden;
         }
 
-        /* == TABLE == */
         table { width: 100%; border-collapse: collapse; }
-
         thead th {
             padding: 0.75rem 1.5rem;
             text-align: left;
@@ -160,29 +199,21 @@
         .participant-name  { font-weight: 700; color: var(--text); font-size: 0.875rem; }
         .participant-email { font-size: 0.78rem; color: var(--text-3); margin-top: 1px; }
 
-        /* == CPF == */
         .cpf-text {
             font-family: 'Courier New', monospace;
             font-size: 0.8rem; font-weight: 600; color: var(--text-2);
             letter-spacing: 0.03em;
         }
 
-        /* == STATUS BADGE == */
+        /* == BADGES == */
         .badge {
             display: inline-flex; align-items: center; gap: 0.35rem;
             padding: 0.28rem 0.7rem;
             border-radius: 999px;
             font-size: 0.75rem; font-weight: 700;
         }
-        .badge-sim {
-            background: var(--green-light);
-            color: var(--green-text);
-            border: 1px solid var(--green-border);
-        }
-        .badge-nao {
-            background: #FEF2F2; color: #991B1B;
-            border: 1px solid #FECACA;
-        }
+        .badge-sim { background: var(--green-light); color: var(--green-text); border: 1px solid var(--green-border); }
+        .badge-nao { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
         .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
         .badge-sim .badge-dot { background: var(--green); }
         .badge-nao .badge-dot { background: #EF4444; }
@@ -202,18 +233,53 @@
         .linkedin-empty { color: var(--text-3); font-size: 0.82rem; }
 
         /* == EMPTY STATE == */
-        .empty-cell {
-            text-align: center;
-            padding: 3.5rem 1rem !important;
-        }
+        .empty-cell { text-align: center; padding: 3.5rem 1rem !important; }
         .empty-icon  { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.35; }
         .empty-title { font-size: 0.95rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.25rem; }
         .empty-sub   { font-size: 0.82rem; color: var(--text-3); }
+
+        /* linha sem resultado de busca */
+        .no-results { display: none; }
+        .no-results td { text-align: center; padding: 3rem 1rem !important; color: var(--text-3); font-size: 0.875rem; }
+
+
+        /* == TOGGLE SWITCH == */
+        .toggle-wrap {
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .toggle {
+            position: relative; width: 44px; height: 24px; flex-shrink: 0;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #FECACA; border-radius: 999px;
+            transition: background 0.25s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute; width: 18px; height: 18px;
+            left: 3px; top: 3px;
+            background: white; border-radius: 50%;
+            transition: transform 0.25s;
+            box-shadow: 0 1px 4px rgba(0,0,0,.2);
+        }
+        .toggle input:checked + .toggle-slider { background: var(--green); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+        .toggle input:disabled + .toggle-slider { opacity: 0.5; cursor: not-allowed; }
+        .toggle-label {
+            font-size: 0.78rem; font-weight: 700;
+            min-width: 82px;
+        }
+        .toggle-label.presente    { color: var(--green-text); }
+        .toggle-label.nao-presente { color: #991B1B; }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
             .main { margin-left: 0; }
             .content { padding: 1rem; }
+            .search-bar { flex-direction: column; align-items: stretch; }
+            .search-wrap { max-width: 100%; }
         }
     </style>
 </head>
@@ -257,54 +323,93 @@
             <div class="page-sub">Lista de participantes inscritos</div>
         </div>
 
+        <!-- BARRA DE BUSCA -->
+        <div class="search-bar">
+            <div class="search-wrap">
+                <span class="search-icon">👤</span>
+                <input class="search-input" type="text" id="buscaNome"
+                       placeholder="Buscar por nome..."
+                       oninput="filtrar()" autocomplete="off" />
+            </div>
+            <div class="search-wrap">
+                <span class="search-icon">🔢</span>
+                <input class="search-input" type="text" id="buscaCpf"
+                       placeholder="Buscar por CPF..."
+                       maxlength="11"
+                       oninput="this.value=this.value.replace(/\D/g,''); filtrar()"
+                       autocomplete="off" />
+            </div>
+            <button class="btn-limpar" id="btnLimpar" onclick="limpar()">✕ Limpar</button>
+            <span class="search-count" id="searchCount"></span>
+        </div>
+
         <div class="table-card">
             <table>
                 <thead>
-                <tr>
-                    <th>Participante</th>
-                    <th>CPF</th>
-                    <th>Status</th>
-                    <th>LinkedIn</th>
-                </tr>
+                    <tr>
+                        <th>Participante</th>
+                        <th>CPF</th>
+                        <th>Status</th>
+                        <th>LinkedIn</th>
+                    </tr>
                 </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(eventoParticipantes)}">
-                    <td colspan="4" class="empty-cell">
-                        <div class="empty-icon">👤</div>
-                        <div class="empty-title">Nenhum participante ainda</div>
-                        <div class="empty-sub">As inscrições aparecerão aqui quando forem realizadas.</div>
-                    </td>
-                </tr>
-                <tr th:each="ep : ${eventoParticipantes}">
-                    <td>
-                        <div class="participant-cell">
-                            <div class="avatar"
-                                 th:text="${#strings.substring(ep.participante.nome, 0, 1)}">A</div>
-                            <div>
-                                <div class="participant-name" th:text="${ep.participante.nome}">Nome</div>
-                                <div class="participant-email" th:text="${ep.participante.email}">email@email.com</div>
+                <tbody id="tabelaBody">
+                    <tr th:if="${#lists.isEmpty(eventoParticipantes)}">
+                        <td colspan="4" class="empty-cell">
+                            <div class="empty-icon">👤</div>
+                            <div class="empty-title">Nenhum participante ainda</div>
+                            <div class="empty-sub">As inscrições aparecerão aqui quando forem realizadas.</div>
+                        </td>
+                    </tr>
+                    <tr th:each="ep : ${eventoParticipantes}"
+                        th:attr="data-nome=${ep.participante.nome.toLowerCase()},
+                                 data-cpf=${ep.participante.cpf}">
+                        <td>
+                            <div class="participant-cell">
+                                <div class="avatar"
+                                     th:text="${#strings.substring(ep.participante.nome, 0, 1)}">A</div>
+                                <div>
+                                    <div class="participant-name" th:text="${ep.participante.nome}">Nome</div>
+                                    <div class="participant-email" th:text="${ep.participante.email}">email</div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="cpf-text" th:text="${ep.participante.cpf}">000.000.000-00</span>
-                    </td>
-                    <td>
-                            <span th:if="${ep.inscrito}" class="badge badge-sim">
-                                <span class="badge-dot"></span> Presente
-                            </span>
-                        <span th:unless="${ep.inscrito}" class="badge badge-nao">
-                                <span class="badge-dot"></span> Não Presente
-                            </span>
-                    </td>
-                    <td>
-                        <span th:if="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
-                            class="linkedin-empty"
-                            th:text="${ep.participante.linkedin}"></span>
-                        <span th:unless="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
-                              class="linkedin-empty">—</span>
-                    </td>
-                </tr>
+                        </td>
+                        <td>
+                            <span class="cpf-text" th:text="${ep.participante.cpf}">00000000000</span>
+                        </td>
+                        <td>
+                            <div class="toggle-wrap">
+                                <label class="toggle">
+                                    <input type="checkbox"
+                                           th:checked="${ep.inscrito}"
+                                           th:attr="data-evento-id=${ep.evento.id}, data-participante-id=${ep.participante.id}"
+                                           onchange="togglePresenca(this)" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="toggle-label"
+                                      th:classappend="${ep.inscrito} ? 'presente' : 'nao-presente'"
+                                      th:text="${ep.inscrito} ? 'Presente' : 'Não Presente'">
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:if="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
+                                  class="linkedin-empty"
+                                  th:text="${ep.participante.linkedin}"></span>
+                            <span th:unless="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
+                                  class="linkedin-empty">—</span>
+                        </td>
+                    </tr>
+                    <!-- linha exibida quando a busca não encontra nada -->
+                    <tr class="no-results" id="semResultados">
+                        <td colspan="4">
+                            <div style="text-align:center;padding:2.5rem 1rem;">
+                                <div style="font-size:2rem;margin-bottom:.5rem;opacity:.35;">🔍</div>
+                                <div style="font-weight:700;color:var(--text-2);margin-bottom:.25rem;">Nenhum participante encontrado</div>
+                                <div style="font-size:.82rem;color:var(--text-3);">Tente outros termos de busca.</div>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -312,5 +417,94 @@
     </div>
 </main>
 
+<script>
+    var totalLinhas = document.querySelectorAll('#tabelaBody tr[data-nome]').length;
+
+    function filtrar() {
+        var nome = document.getElementById('buscaNome').value.toLowerCase().trim();
+        var cpf  = document.getElementById('buscaCpf').value.replace(/\D/g, '').trim();
+
+        var linhas = document.querySelectorAll('#tabelaBody tr[data-nome]');
+        var visiveis = 0;
+
+        linhas.forEach(function(tr) {
+            var dataNome = tr.getAttribute('data-nome') || '';
+            var dataCpf  = tr.getAttribute('data-cpf')  || '';
+
+            var matchNome = !nome || dataNome.includes(nome);
+            var matchCpf  = !cpf  || dataCpf.startsWith(cpf);
+
+            if (matchNome && matchCpf) {
+                tr.style.display = '';
+                visiveis++;
+            } else {
+                tr.style.display = 'none';
+            }
+        });
+
+        // Linha "sem resultados"
+        var semResultados = document.getElementById('semResultados');
+        semResultados.style.display = visiveis === 0 ? 'table-row' : 'none';
+
+        // Contador
+        var count = document.getElementById('searchCount');
+        var btnLimpar = document.getElementById('btnLimpar');
+        var buscaAtiva = nome !== '' || cpf !== '';
+
+        if (buscaAtiva) {
+            count.textContent = visiveis + ' de ' + totalLinhas + ' participante' + (totalLinhas !== 1 ? 's' : '');
+            btnLimpar.classList.add('visible');
+        } else {
+            count.textContent = totalLinhas + ' participante' + (totalLinhas !== 1 ? 's' : '');
+            btnLimpar.classList.remove('visible');
+        }
+    }
+
+    function limpar() {
+        document.getElementById('buscaNome').value = '';
+        document.getElementById('buscaCpf').value  = '';
+        filtrar();
+    }
+
+    // Inicializa o contador
+    window.onload = function() { filtrar(); };
+
+    // ── Toggle de presença manual ──────────────────
+    async function togglePresenca(checkbox) {
+        var eventoId      = checkbox.getAttribute('data-evento-id');
+        var participanteId = checkbox.getAttribute('data-participante-id');
+        var label = checkbox.closest('.toggle-wrap').querySelector('.toggle-label');
+
+        // Desabilita durante a requisição
+        checkbox.disabled = true;
+
+        try {
+            var resp = await fetch(
+                '/api/admin/eventos/' + eventoId + '/participantes/' + participanteId + '/toggle-presenca',
+                { method: 'POST' }
+            );
+
+            if (!resp.ok) throw new Error('Erro HTTP ' + resp.status);
+
+            var data = await resp.json();
+
+            // Atualiza o label visualmente
+            if (data.inscrito) {
+                label.textContent = 'Presente';
+                label.className = 'toggle-label presente';
+            } else {
+                label.textContent = 'Não Presente';
+                label.className = 'toggle-label nao-presente';
+            }
+
+        } catch (e) {
+            // Reverte o checkbox se falhou
+            checkbox.checked = !checkbox.checked;
+            alert('Erro ao atualizar presença: ' + e.message);
+        } finally {
+            checkbox.disabled = false;
+        }
+    }
+</script>
 </body>
 </html>
