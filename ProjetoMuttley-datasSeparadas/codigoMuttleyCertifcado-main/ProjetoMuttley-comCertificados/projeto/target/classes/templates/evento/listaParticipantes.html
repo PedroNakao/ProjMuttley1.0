@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Participantes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange:       #F97316;
+            --orange-light: #FFF7ED;
+            --orange-dark:  #EA580C;
+            --bg:           #F8FAFC;
+            --surface:      #FFFFFF;
+            --border:       #E2E8F0;
+            --text:         #0F172A;
+            --text-2:       #475569;
+            --text-3:       #94A3B8;
+            --green-light:  #F0FDF4;
+            --green-border: #BBF7D0;
+            --green-text:   #166534;
+            --green:        #22C55E;
+            --blue:         #3B82F6;
+            --blue-light:   #EFF6FF;
+            --radius:       16px;
+            --radius-sm:    10px;
+            --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* == SIDEBAR == */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 1.5rem 1.25rem 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--orange);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .logo-text { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .logo-sub  { font-size: 0.7rem; color: var(--text-3); font-weight: 500; }
+        .sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 2px; }
+        .nav-section-label {
+            font-size: 0.65rem; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            padding: 0.5rem 0.6rem 0.25rem;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem; font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+        .nav-item:hover { background: var(--bg); color: var(--text); }
+        .nav-item.active { background: var(--orange-light); color: var(--orange-dark); font-weight: 600; }
+        .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+        /* == MAIN == */
+        .main { margin-left: 240px; min-height: 100vh; }
+
+        /* == TOPBAR == */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(248,250,252,.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.875rem 2rem;
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .topbar-back {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--text-3);
+            text-decoration: none;
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            transition: all 0.15s;
+        }
+        .topbar-back:hover { color: var(--text); border-color: var(--text-3); }
+        .topbar-sep { color: var(--border); }
+        .topbar-crumb { font-size: 0.82rem; color: var(--text-3); font-weight: 500; }
+        .topbar-crumb strong { color: var(--text-2); font-weight: 600; }
+
+        /* == CONTENT == */
+        .content { padding: 2rem; }
+
+        .page-header { margin-bottom: 1.75rem; }
+        .page-title  { font-size: 1.5rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
+        .page-sub    { font-size: 0.85rem; color: var(--text-3); margin-top: 0.25rem; font-weight: 500; }
+
+        /* == TABLE CARD == */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        /* == TABLE == */
+        table { width: 100%; border-collapse: collapse; }
+
+        thead th {
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.72rem; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #FAFBFC; }
+        tbody td {
+            padding: 0.9rem 1.5rem;
+            font-size: 0.855rem;
+            color: var(--text-2);
+            vertical-align: middle;
+        }
+
+        /* == PARTICIPANT CELL == */
+        .participant-cell { display: flex; align-items: center; gap: 0.75rem; }
+        .avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--orange-light);
+            border: 1.5px solid #FDBA74;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem; font-weight: 800; color: var(--orange-dark);
+            flex-shrink: 0; text-transform: uppercase;
+        }
+        .participant-name  { font-weight: 700; color: var(--text); font-size: 0.875rem; }
+        .participant-email { font-size: 0.78rem; color: var(--text-3); margin-top: 1px; }
+
+        /* == CPF == */
+        .cpf-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-2);
+            letter-spacing: 0.03em;
+        }
+
+        /* == STATUS BADGE == */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.28rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem; font-weight: 700;
+        }
+        .badge-sim {
+            background: var(--green-light);
+            color: var(--green-text);
+            border: 1px solid var(--green-border);
+        }
+        .badge-nao {
+            background: #FEF2F2; color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .badge-sim .badge-dot { background: var(--green); }
+        .badge-nao .badge-dot { background: #EF4444; }
+
+        /* == LINKEDIN == */
+        .linkedin-link {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.8rem; font-weight: 600; color: var(--blue);
+            text-decoration: none;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid #BFDBFE;
+            background: var(--blue-light);
+            transition: background 0.15s;
+        }
+        .linkedin-link:hover { background: #DBEAFE; }
+        .linkedin-empty { color: var(--text-3); font-size: 0.82rem; }
+
+        /* == EMPTY STATE == */
+        .empty-cell {
+            text-align: center;
+            padding: 3.5rem 1rem !important;
+        }
+        .empty-icon  { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.35; }
+        .empty-title { font-size: 0.95rem; font-weight: 700; color: var(--text-2); margin-bottom: 0.25rem; }
+        .empty-sub   { font-size: 0.82rem; color: var(--text-3); }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🏷</div>
+        <div>
+            <div class="logo-text">Muttley</div>
+            <div class="logo-sub">Painel Administrativo</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+        <a class="nav-item active" th:href="@{/admin/dashboard}">
+            <span class="nav-icon">📅</span> Eventos
+        </a>
+        <a class="nav-item" th:href="@{/eventos/cadastrar}">
+            <span class="nav-icon">➕</span> Novo Evento
+        </a>
+        <div class="nav-section-label" style="margin-top:.75rem;">Gestão</div>
+        <a class="nav-item" th:href="@{/tag}">
+            <span class="nav-icon">🏅</span> Gerenciar Tags
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
+
+    <div class="topbar">
+        <a class="topbar-back" th:href="@{/admin/dashboard}">← Voltar</a>
+        <span class="topbar-sep">/</span>
+        <span class="topbar-crumb">Eventos / <strong th:text="${evento.titulo}">Evento</strong></span>
+    </div>
+
+    <div class="content">
+
+        <div class="page-header">
+            <div class="page-title" th:text="${evento.titulo}">Nome do Evento</div>
+            <div class="page-sub">Lista de participantes inscritos</div>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>CPF</th>
+                    <th>Status</th>
+                    <th>LinkedIn</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(eventoParticipantes)}">
+                    <td colspan="4" class="empty-cell">
+                        <div class="empty-icon">👤</div>
+                        <div class="empty-title">Nenhum participante ainda</div>
+                        <div class="empty-sub">As inscrições aparecerão aqui quando forem realizadas.</div>
+                    </td>
+                </tr>
+                <tr th:each="ep : ${eventoParticipantes}">
+                    <td>
+                        <div class="participant-cell">
+                            <div class="avatar"
+                                 th:text="${#strings.substring(ep.participante.nome, 0, 1)}">A</div>
+                            <div>
+                                <div class="participant-name" th:text="${ep.participante.nome}">Nome</div>
+                                <div class="participant-email" th:text="${ep.participante.email}">email@email.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="cpf-text" th:text="${ep.participante.cpf}">000.000.000-00</span>
+                    </td>
+                    <td>
+                            <span th:if="${ep.inscrito}" class="badge badge-sim">
+                                <span class="badge-dot"></span> Presente
+                            </span>
+                        <span th:unless="${ep.inscrito}" class="badge badge-nao">
+                                <span class="badge-dot"></span> Não Presente
+                            </span>
+                    </td>
+                    <td>
+                        <span th:if="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
+                            class="linkedin-empty"
+                            th:text="${ep.participante.linkedin}"></span>
+                        <span th:unless="${ep.participante.linkedin != null and !#strings.isEmpty(ep.participante.linkedin)}"
+                              class="linkedin-empty">—</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>
