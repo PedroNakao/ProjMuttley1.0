@@ -29,6 +29,9 @@ public class EventoController {
 
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
+    
+    @Autowired
+    private EventoParticipanteRepository eventoParticipanteRepository;
 
     // ── Tela de cadastro ─────────────────────────────────────────────────────
 
@@ -376,5 +379,32 @@ public class EventoController {
 
     }
 
+
+
+    // ── API: toggle de presença manual (usado pela lista de participantes) ────
+    @PostMapping("/api/admin/eventos/{eventoId}/participantes/{participanteId}/toggle-presenca")
+    @ResponseBody
+    public ResponseEntity<?> togglePresenca(
+            @PathVariable Long eventoId,
+            @PathVariable Long participanteId) {
+
+        EventoParticipanteId idComposto = new EventoParticipanteId();
+        idComposto.setEventoId(eventoId);
+        idComposto.setParticipanteId(participanteId);
+
+        EventoParticipante ep = eventoParticipanteRepository.findById(idComposto).orElse(null);
+        if (ep == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        boolean novoStatus = !Boolean.TRUE.equals(ep.getInscrito());
+        ep.setInscrito(novoStatus);
+        eventoParticipanteRepository.save(ep);
+
+        return ResponseEntity.ok(java.util.Map.of(
+            "inscrito", novoStatus,
+            "mensagem", novoStatus ? "Presença confirmada manualmente." : "Presença removida."
+        ));
+    }
 
 }
