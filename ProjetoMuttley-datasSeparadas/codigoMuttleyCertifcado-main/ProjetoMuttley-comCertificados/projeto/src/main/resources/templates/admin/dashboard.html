@@ -597,6 +597,7 @@
                 <a class="btn-action btn-inscricao" href="${urlInscricao}">Inscrição →</a>
                 <button class="btn-action btn-qr" onclick="abrirQr(${e.id}, '${esc(e.titulo).replace(/'/g,"\'")}')">🔳 QR Code</button>
                 <a class="btn-action btn-edit" href="/eventos/editar/${e.id}">✏️ Editar</a>
+                <a class="btn-action btn-edit" href="/admin/eventos/${e.id}/listaParticipantes">Listar Participantes</a>
             </div>
         </div>`;
     }

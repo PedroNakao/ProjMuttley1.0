@@ -357,4 +357,24 @@ public class EventoController {
         model.addAttribute("tagIdsSelecionadas", tagIdsSelecionadas);
         return "evento/editar";
     }
+
+    @GetMapping("/admin/eventos/{id}/listaParticipantes")
+    public String paginaListaParticipantesEvento(@PathVariable Long id, Model model) {
+        Evento evento = eventoRepository.findById(id).orElse(null);
+
+        if (evento == null) {
+            return "redirect:/eventos"; // ou uma página de erro
+        }
+
+
+        model.addAttribute("evento", evento);
+
+        List<EventoParticipante> eventoParticipante =  evento.getEventoParticipantes();
+        model.addAttribute("eventoParticipantes", eventoParticipante);
+
+        return "evento/listaParticipantes";
+
+    }
+
+
 }
