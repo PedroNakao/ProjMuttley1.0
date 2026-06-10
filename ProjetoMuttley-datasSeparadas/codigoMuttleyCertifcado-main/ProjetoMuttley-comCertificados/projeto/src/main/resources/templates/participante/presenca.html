@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${evento != null ? 'Presença — ' + evento.titulo : 'Confirmar Presença'}">Confirmar Presença</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --orange:        #F97316;
+            --orange-light:  #FFF7ED;
+            --orange-dark:   #EA580C;
+            --bg:            #F8FAFC;
+            --surface:       #FFFFFF;
+            --border:        #E2E8F0;
+            --text:          #0F172A;
+            --text-2:        #475569;
+            --text-3:        #94A3B8;
+            --green:         #22C55E;
+            --green-light:   #F0FDF4;
+            --green-border:  #BBF7D0;
+            --green-text:    #166534;
+            --yellow-light:  #FFFBEB;
+            --yellow-border: #FDE68A;
+            --yellow-text:   #92400E;
+            --error-bg:      #FEF2F2;
+            --error-border:  #FECACA;
+            --error-text:    #991B1B;
+            --radius:        16px;
+            --radius-sm:     10px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container { width: 100%; max-width: 440px; }
+
+        /* ── LOGO ── */
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo-icon {
+            width: 56px; height: 56px;
+            background: var(--orange);
+            border-radius: 16px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 0.6rem;
+            box-shadow: 0 4px 16px rgba(249,115,22,.3);
+        }
+        .logo-text { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+        .logo-sub  { font-size: 0.78rem; color: var(--text-3); font-weight: 500; margin-top: 2px; }
+
+        /* ── CARD DO EVENTO ── */
+        .event-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+            display: flex; align-items: flex-start; gap: 1rem;
+        }
+        .event-date {
+            min-width: 52px;
+            background: var(--orange-light);
+            border: 2px solid #FDBA74;
+            border-radius: 12px;
+            text-align: center;
+            padding: 0.4rem 0.25rem;
+            flex-shrink: 0;
+        }
+        .date-day { font-size: 1.5rem; font-weight: 800; color: var(--orange-dark); line-height: 1; }
+        .date-mon { font-size: 0.65rem; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.06em; }
+        .event-info { flex: 1; min-width: 0; }
+        .event-badge {
+            display: inline-block; padding: 0.18rem 0.6rem;
+            border-radius: 999px; font-size: 0.7rem; font-weight: 700;
+            background: #DBEAFE; color: #1D4ED8; margin-bottom: 0.3rem;
+        }
+        .event-title { font-size: 1rem; font-weight: 800; color: var(--text); }
+        .event-meta  { margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.2rem; }
+        .meta-row    { font-size: 0.78rem; color: var(--text-2); display: flex; align-items: center; gap: 0.35rem; }
+
+        /* ── ALERTAS ── */
+        .alert {
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: 0.875rem; font-weight: 600;
+            display: flex; align-items: flex-start; gap: 0.5rem;
+            line-height: 1.4;
+        }
+        .alert-success { background: var(--green-light);  border: 1px solid var(--green-border);  color: var(--green-text); }
+        .alert-error   { background: var(--error-bg);     border: 1px solid var(--error-border);  color: var(--error-text); }
+        .alert-warn    { background: var(--yellow-light);  border: 1px solid var(--yellow-border); color: var(--yellow-text); }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .form-header {
+            padding: 1.25rem 1.5rem 0;
+        }
+        .form-title { font-size: 1rem; font-weight: 800; color: var(--text); }
+        .form-sub   { font-size: 0.82rem; color: var(--text-3); margin-top: 0.15rem; font-weight: 500; }
+        .form-body  { padding: 1.25rem 1.5rem 1.5rem; }
+
+        /* ── CAMPO ── */
+        .field { margin-bottom: 1rem; }
+        .field:last-child { margin-bottom: 0; }
+        .field-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-2); margin-bottom: 0.4rem; }
+        .input {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            font-family: inherit; font-size: 1rem; font-weight: 600;
+            letter-spacing: 0.08em;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            text-align: center;
+        }
+        .input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,.12); }
+        .input::placeholder { color: var(--text-3); letter-spacing: 0; font-weight: 400; font-size: 0.875rem; }
+
+        /* ── BOTÃO ── */
+        .btn {
+            width: 100%; padding: 0.85rem 1.25rem;
+            border-radius: var(--radius-sm); border: none;
+            font-family: inherit; font-size: 0.95rem; font-weight: 800;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: all 0.15s;
+        }
+        .btn-primary {
+            background: var(--orange); color: white;
+            box-shadow: 0 3px 12px rgba(249,115,22,.35);
+        }
+        .btn-primary:hover  { background: var(--orange-dark); box-shadow: 0 4px 18px rgba(249,115,22,.45); }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* ── SUCESSO GRANDE ── */
+        .success-state {
+            text-align: center;
+            padding: 2rem 1.5rem;
+        }
+        .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+        .success-title { font-size: 1.3rem; font-weight: 800; color: var(--green-text); margin-bottom: 0.5rem; }
+        .success-sub   { font-size: 0.875rem; color: var(--text-3); font-weight: 500; }
+
+        /* ── RODAPÉ ── */
+        .footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-3);
+        }
+
+        /* Sem evento */
+        .not-found {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .not-found-icon  { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+        .not-found-title { font-size: 1rem; font-weight: 700; color: var(--text-2); }
+        .not-found-sub   { font-size: 0.82rem; color: var(--text-3); margin-top: 0.4rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- LOGO -->
+    <div class="logo">
+        <div class="logo-icon">🏷</div>
+        <div class="logo-text">Muttley</div>
+        <div class="logo-sub">Confirmação de Presença</div>
+    </div>
+
+    <!-- EVENTO NÃO ENCONTRADO -->
+    <div th:if="${evento == null}" class="not-found">
+        <div class="not-found-icon">⚠️</div>
+        <div class="not-found-title">Evento não encontrado</div>
+        <div class="not-found-sub">O QR Code pode estar desatualizado ou o evento foi removido.</div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div th:if="${evento != null}">
+
+        <!-- CARD DO EVENTO -->
+        <div class="event-card">
+            <div class="event-date">
+                <div class="date-day" th:text="${#temporals.format(evento.dataInicio, 'dd')}">00</div>
+                <div class="date-mon" th:text="${#temporals.format(evento.dataInicio, 'MMM')}">MÊS</div>
+            </div>
+            <div class="event-info">
+                <span class="event-badge" th:text="${evento.tipoEvento?.descricao ?: 'Evento'}">Tipo</span>
+                <div class="event-title" th:text="${evento.titulo}">Nome do Evento</div>
+                <div class="event-meta">
+                    <div class="meta-row">
+                        🕐 <span th:text="${#temporals.format(evento.dataInicio, 'HH:mm') + 'h'}">00:00h</span>
+                    </div>
+                    <div class="meta-row" th:if="${evento.local}">
+                        📍 <span th:text="${evento.local}">Local</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERTA DE ERRO -->
+        <div th:if="${erro}" class="alert alert-error">
+            ⚠️ <span th:text="${erro}"></span>
+        </div>
+
+        <!-- ALERTA DE AVISO (já confirmou) -->
+        <div th:if="${aviso}" class="alert alert-warn">
+            ℹ️ <span th:text="${aviso}"></span>
+        </div>
+
+        <!-- ESTADO DE SUCESSO -->
+        <div th:if="${sucesso}" class="form-card">
+            <div class="success-state">
+                <div class="success-icon">✅</div>
+                <div class="success-title" th:text="${sucesso}">Presença confirmada!</div>
+                <div class="success-sub">Sua participação foi registrada no sistema.<br>Você pode fechar esta página.</div>
+            </div>
+        </div>
+
+        <!-- FORMULÁRIO (só aparece se ainda não confirmou) -->
+        <div th:if="${sucesso == null}" class="form-card">
+            <div class="form-header">
+                <div class="form-title">Confirmar Presença</div>
+                <div class="form-sub">Digite seu CPF para registrar sua presença</div>
+            </div>
+            <div class="form-body">
+                <form th:action="@{/presenca/{id}(id=${evento.id})}" method="POST"
+                      onsubmit="return validar()">
+                    <div class="field">
+                        <label class="field-label" for="cpf">Seu CPF</label>
+                        <input class="input" type="text" id="cpf" name="cpf"
+                               placeholder="Apenas números (11 dígitos)"
+                               maxlength="11" required autocomplete="off"
+                               oninput="this.value=this.value.replace(/\D/g,'')" />
+                    </div>
+                    <div class="field">
+                        <button class="btn btn-primary" type="submit">
+                            ✓ Confirmar minha presença
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RODAPÉ — sem links para outras telas -->
+    <div class="footer">
+        Muttley — Sistema de Gestão Acadêmica
+    </div>
+
+</div>
+
+<script>
+    function validar() {
+        var cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+        if (cpf.length !== 11) {
+            alert('CPF deve ter exatamente 11 dígitos.');
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>
