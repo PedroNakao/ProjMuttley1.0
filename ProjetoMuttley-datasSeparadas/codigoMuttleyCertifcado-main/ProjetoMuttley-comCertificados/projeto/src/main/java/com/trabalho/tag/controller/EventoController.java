@@ -29,9 +29,6 @@ public class EventoController {
 
     @Autowired
     private PatrocinadorRepository patrocinadorRepository;
-    
-    @Autowired
-    private EventoParticipanteRepository eventoParticipanteRepository;
 
     // ── Tela de cadastro ─────────────────────────────────────────────────────
 
@@ -48,8 +45,10 @@ public class EventoController {
             @RequestParam(value = "descricao", required = false) String descricao,
             @RequestParam("tipoEvento") TipoEvento tipoEvento,
             @RequestParam("modalidade") ModalidadeEvento modalidade,
-            @RequestParam("dataInicio") String dataInicio,
-            @RequestParam("dataFim") String dataFim,
+            @RequestParam("dataInicioData") String dataInicioData,
+            @RequestParam("dataInicioHora") String dataInicioHora,
+            @RequestParam("dataFimData") String dataFimData,
+            @RequestParam("dataFimHora") String dataFimHora,
             @RequestParam(value = "local", required = false) String local,
             @RequestParam(value = "vagasMaximas", defaultValue = "0") Integer vagasMaximas,
             @RequestParam(value = "pontosParticipacao", defaultValue = "1") Integer pontosParticipacao,
@@ -68,8 +67,20 @@ public class EventoController {
             evento.setDescricao(descricao);
             evento.setTipoEvento(tipoEvento);
             evento.setModalidade(modalidade);
-            evento.setDataInicio(LocalDateTime.parse(dataInicio));
-            evento.setDataFim(LocalDateTime.parse(dataFim));
+            LocalDateTime dataInicio = LocalDateTime.of(
+                    java.time.LocalDate.parse(dataInicioData),
+                    java.time.LocalTime.parse(dataInicioHora)
+            );
+            LocalDateTime dataFim = LocalDateTime.of(
+                    java.time.LocalDate.parse(dataFimData),
+                    java.time.LocalTime.parse(dataFimHora)
+            );
+            if (!dataFim.isAfter(dataInicio)) {
+                model.addAttribute("mensagem", "Erro: a data/hora de fim deve ser posterior à de início.");
+                return "evento/cadastrar";
+            }
+            evento.setDataInicio(dataInicio);
+            evento.setDataFim(dataFim);
             evento.setLocal(local);
             evento.setVagasMaximas(vagasMaximas != null ? vagasMaximas : 0);
             boolean concederMedalha = "true".equals(medalhaParam);
@@ -379,32 +390,5 @@ public class EventoController {
 
     }
 
-
-
-    // ── API: toggle de presença manual (usado pela lista de participantes) ────
-    @PostMapping("/api/admin/eventos/{eventoId}/participantes/{participanteId}/toggle-presenca")
-    @ResponseBody
-    public ResponseEntity<?> togglePresenca(
-            @PathVariable Long eventoId,
-            @PathVariable Long participanteId) {
-
-        EventoParticipanteId idComposto = new EventoParticipanteId();
-        idComposto.setEventoId(eventoId);
-        idComposto.setParticipanteId(participanteId);
-
-        EventoParticipante ep = eventoParticipanteRepository.findById(idComposto).orElse(null);
-        if (ep == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        boolean novoStatus = !Boolean.TRUE.equals(ep.getInscrito());
-        ep.setInscrito(novoStatus);
-        eventoParticipanteRepository.save(ep);
-
-        return ResponseEntity.ok(java.util.Map.of(
-            "inscrito", novoStatus,
-            "mensagem", novoStatus ? "Presença confirmada manualmente." : "Presença removida."
-        ));
-    }
 
 }
